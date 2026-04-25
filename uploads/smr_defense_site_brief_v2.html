@@ -1,0 +1,251 @@
+
+<style>
+  .brief { max-width: 660px; padding: 2rem 0; font-family: var(--font-sans); }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 0.75rem; }
+  h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 1rem; }
+  h3 { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 0.4rem; }
+  p, li { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin: 0 0 0.5rem; }
+  .persona-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 1rem; }
+  .persona-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem; border: 0.5px solid var(--color-border-tertiary); }
+  .persona-card .role { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); margin-bottom: 6px; }
+  .persona-card .name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px; }
+  .want-item { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; padding: 3px 0; border-top: 0.5px solid var(--color-border-tertiary); }
+  .want-item:first-of-type { border-top: none; padding-top: 0; }
+  .section-divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 2.5rem 0; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; margin-right: 4px; margin-bottom: 4px; }
+  .pill-blue { background: #E6F1FB; color: #0C447C; }
+  .pill-teal { background: #E1F5EE; color: #085041; }
+  .pill-amber { background: #FAEEDA; color: #633806; }
+  .pill-coral { background: #FAECE7; color: #712B13; }
+  .pill-gray { background: #F1EFE8; color: #444441; }
+  .section-block { border-left: 2px solid var(--color-border-tertiary); padding-left: 1rem; margin-bottom: 1.25rem; }
+  .nav-item { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .nav-item:last-child { border-bottom: none; }
+  .nav-num { font-size: 11px; color: var(--color-text-tertiary); min-width: 20px; }
+  .nav-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); min-width: 140px; }
+  .nav-purpose { font-size: 13px; color: var(--color-text-secondary); }
+  .tone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0.75rem; }
+  .tone-yes { background: #EAF3DE; border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; color: #27500A; }
+  .tone-no { background: #FCEBEB; border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; color: #791F1F; }
+  .tone-label { font-weight: 500; display: block; margin-bottom: 2px; }
+  .callout { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 1rem 1.25rem; margin: 1rem 0; }
+  .callout p { margin: 0; font-size: 13px; color: var(--color-text-secondary); }
+  .callout strong { color: var(--color-text-primary); font-weight: 500; }
+  .warning { background: #FAEEDA; border-radius: var(--border-radius-lg); border: 0.5px solid #EF9F27; padding: 1rem 1.25rem; margin: 1rem 0; }
+  .warning p { margin: 0; font-size: 13px; color: #633806; }
+  .warning strong { color: #412402; font-weight: 500; }
+  ul { padding-left: 1.25rem; margin: 0; }
+  li { margin-bottom: 0.25rem; }
+</style>
+
+<div class="brief">
+
+  <div class="section">
+    <div class="section-label">Design brief — SMR Defense website v2</div>
+    <h2>Revised: SMR standalone, claims kept safe</h2>
+    <p>This is a self-contained brief for designing the SMR Defense public-facing site. Two hard constraints drive every decision in this version: (1) SMR Defense is presented as its own entity — no ecosystem parent, no distribution relationships named; (2) no specific claim appears on the site that could become inaccurate, change, create liability, or reveal internal strategy to competitors.</p>
+  </div>
+
+  <div class="warning">
+    <p><strong>What's been removed from v1 and why</strong><br>GridMarket — internal relationship, not public positioning. Specific pricing ($250K/yr) — subject to change, creates anchor problems. "NERC CIP compliant" as a badge — compliance status is aspirational / in-progress, claiming it publicly is risky. "No Chinese hardware" as an explicit statement — current hardware mix may include Chinese-origin components; this could create legal exposure. Named partners (Xerox, OEM names) — partnership terms may be confidential or not yet formalized for public announcement. Specific site counts or pipeline figures — these belong to other entities and change.</p>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="section">
+    <div class="section-label">Part 1 — Stakeholder analysis</div>
+    <h2>Four visitors, four jobs to be done</h2>
+
+    <div class="persona-grid">
+      <div class="persona-card">
+        <div class="role">Infrastructure investor</div>
+        <div class="name">The Capital Allocator</div>
+        <div class="want-item">Is the market timing real or manufactured?</div>
+        <div class="want-item">What's the business model — recurring or project?</div>
+        <div class="want-item">Who's on the team and where did this come from?</div>
+        <div class="want-item">Is there any traction / deployment signal?</div>
+        <div class="want-item">How do I get the deck and talk to someone?</div>
+      </div>
+      <div class="persona-card">
+        <div class="role">Enterprise operator</div>
+        <div class="name">The Utility / Data Center Buyer</div>
+        <div class="want-item">What does this actually do at my site?</div>
+        <div class="want-item">Is it built for regulated environments?</div>
+        <div class="want-item">What does onboarding / a pilot look like?</div>
+        <div class="want-item">Can I talk to someone who's deployed it?</div>
+        <div class="want-item">Is this a vendor I can trust long-term?</div>
+      </div>
+      <div class="persona-card">
+        <div class="role">Strategic partner</div>
+        <div class="name">The Integrator / OEM</div>
+        <div class="want-item">Are they a customer or a competitor for me?</div>
+        <div class="want-item">What's the partnership model look like?</div>
+        <div class="want-item">Do they have real deployment reach?</div>
+        <div class="want-item">Is the team serious enough to work with?</div>
+        <div class="want-item">Is there a fast path to a conversation?</div>
+      </div>
+      <div class="persona-card">
+        <div class="role">Gov / defense procurement</div>
+        <div class="name">The Compliance Buyer</div>
+        <div class="want-item">Domestic — is there a provable supply chain?</div>
+        <div class="want-item">How is the security architecture designed?</div>
+        <div class="want-item">What standards are they building toward?</div>
+        <div class="want-item">Is there a procurement path (GSA, contracts)?</div>
+        <div class="want-item">Who do I actually call?</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="section">
+    <div class="section-label">Part 1b — Universal trust signals</div>
+    <h2>What every visitor needs in the first 10 seconds</h2>
+    <div class="callout">
+      <p><strong>The site's only job in the first scroll:</strong> establish that SMR Defense is a serious company solving a real and urgent problem in a market that is structurally underserved. Everything else is elaboration.</p>
+    </div>
+    <ul>
+      <li>The problem is real and now — AI power demand, aging infrastructure, and new compliance pressure have created a gap</li>
+      <li>SMR Defense is built specifically for regulated infrastructure environments — not retrofitted from consumer robotics</li>
+      <li>The team has firsthand experience in high-security, high-stakes physical operations</li>
+      <li>This is a service model, not a hardware sale — ongoing relationship, not a one-time transaction</li>
+      <li>There is a clear, fast path to a real conversation — not a wait-list or a form that goes nowhere</li>
+    </ul>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="section">
+    <div class="section-label">Part 2 — Design vision</div>
+    <h2>Look, feel, and tone direction</h2>
+
+    <div class="section-block">
+      <h3>Aesthetic reference</h3>
+      <p>Palantir, Anduril, a serious infrastructure fund's investor page. Not a startup. Not a drone company. The brand should feel like it belongs in a room with utilities executives and defense contractors — earned gravity, not performed toughness.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Color</h3>
+      <p>Near-black primary surfaces. Brand teal from the existing wolf-shield logo as the sole accent — used only for CTAs, key label badges, and active states. White type throughout. No gradients, no glow, no color noise.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Typography</h3>
+      <p>Geometric sans for body and UI. A condensed display weight for hero numbers and section openers — command and control feel. Tight tracking on category labels. Two weights only.</p>
+    </div>
+
+    <div class="section-block">
+      <h3>Imagery</h3>
+      <p>Real quadruped/drone in real infrastructure environments if available. Otherwise: dark substation photography, data center corridors, power infrastructure. No renders, no stock smiles, no abstract blobs of light.</p>
+    </div>
+
+    <div class="tone-grid">
+      <div class="tone-yes"><span class="tone-label">Write like this</span>Built for the environments where failure isn't an option.</div>
+      <div class="tone-no"><span class="tone-label">Not like this</span>We're reimagining how critical infrastructure stays secure.</div>
+      <div class="tone-yes"><span class="tone-label">Write like this</span>Autonomous fleets. Continuous coverage. No personnel required.</div>
+      <div class="tone-no"><span class="tone-label">Not like this</span>Our AI-powered robotic solutions deliver 24/7 situational awareness across your entire facility footprint.</div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="section">
+    <div class="section-label">Part 3 — Information architecture</div>
+    <h2>Page structure and section intent</h2>
+
+    <div class="nav-item">
+      <div class="nav-num">01</div>
+      <div class="nav-name">Hero</div>
+      <div class="nav-purpose">One line: the problem space. One line: what SMR does. Two CTAs: "Request a briefing" + "See how it works." Ambient infrastructure video or dark static image.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">02</div>
+      <div class="nav-name">Why now</div>
+      <div class="nav-purpose">Power demand is accelerating. Infrastructure is aging. Compliance requirements are tightening. The workforce can't scale to meet it. One paragraph, no numbers that could become wrong.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">03</div>
+      <div class="nav-name">What the fleet does</div>
+      <div class="nav-purpose">Four pillars: Security · Inspection · Compliance support · Incident response. Each gets a single action-verb sentence. No capability claims that require certification to back up.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">04</div>
+      <div class="nav-name">The model</div>
+      <div class="nav-purpose">Fleet as a managed service — deployed, operated, and maintained by SMR. No hardware purchase. No headcount. Outcome-based pricing discussed on a call, not on the page.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">05</div>
+      <div class="nav-name">Built for regulated environments</div>
+      <div class="nav-purpose">Designed with critical infrastructure compliance frameworks in mind. Domestic-first hardware sourcing approach. On-premises data architecture. Auditable by design. No specific certification badges — directional language only.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">06</div>
+      <div class="nav-name">Who we work with</div>
+      <div class="nav-purpose">Vertical logos or category labels only (utilities, data centers, C&I) — no named clients, no named partners until those relationships are public and confirmed.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">07</div>
+      <div class="nav-name">Team + origin</div>
+      <div class="nav-purpose">High-security operations background → the problem became obvious → built the solution. Short. No internal strategy disclosed.</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-num">08</div>
+      <div class="nav-name">Two-track CTA</div>
+      <div class="nav-purpose">"I operate a site" → pilot inquiry. "I'm an investor or partner" → briefing request. Both go to a lightweight form or a direct email — not a generic contact page.</div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="section">
+    <div class="section-label">Part 4 — Safe copy rules</div>
+    <h2>What to say vs. what to avoid</h2>
+
+    <div class="section-block">
+      <h3>Compliance — say this</h3>
+      <p>"Designed with NERC CIP and critical infrastructure compliance requirements in mind." "Built for regulated environments." "Architecture supports on-premises data and audit requirements."</p>
+    </div>
+    <div class="section-block">
+      <h3>Compliance — never say this</h3>
+      <p>"NERC CIP compliant." "NDAA certified." Any specific standard as a completed claim rather than a design intent.</p>
+    </div>
+    <div class="section-block">
+      <h3>Hardware sourcing — say this</h3>
+      <p>"Domestic-first hardware sourcing approach." "Supply chain built for enterprise security requirements." "Designed to meet government procurement standards."</p>
+    </div>
+    <div class="section-block">
+      <h3>Hardware sourcing — never say this</h3>
+      <p>"No Chinese hardware." "100% domestic." Any absolute claim that current hardware mix can't fully support.</p>
+    </div>
+    <div class="section-block">
+      <h3>Pricing — say this</h3>
+      <p>"Fleet-as-a-service model with outcome-based pricing." "Structured to replace multiple cost centers simultaneously." Pricing discussed in a briefing.</p>
+    </div>
+    <div class="section-block">
+      <h3>Pricing — never say this</h3>
+      <p>Any specific number — dollar figures on a public site lock you in and signal cost structure to competitors.</p>
+    </div>
+    <div class="section-block">
+      <h3>Traction / scale — say this</h3>
+      <p>"Deployed across energy infrastructure sites." "Operating in utility, data center, and industrial environments." Vague enough to be true at any deployment stage.</p>
+    </div>
+    <div class="section-block">
+      <h3>Traction / scale — never say this</h3>
+      <p>Specific site counts, pipeline numbers, revenue figures — these belong to other entities and will change.</p>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 6px;">
+      <span class="pill pill-teal">Designed for compliance</span>
+      <span class="pill pill-teal">Domestic-first sourcing</span>
+      <span class="pill pill-teal">On-premises architecture</span>
+      <span class="pill pill-blue">Fleet as a managed service</span>
+      <span class="pill pill-blue">Outcome-based pricing</span>
+      <span class="pill pill-blue">Built for regulated environments</span>
+      <span class="pill pill-gray">Briefing on request</span>
+      <span class="pill pill-gray">Pilot inquiry</span>
+    </div>
+    <p style="font-size: 12px; color: var(--color-text-tertiary); margin-top: 0.5rem;">These 8 phrases are directionally accurate, strategically safe, and durable regardless of how the business evolves. Use them as the site's core vocabulary.</p>
+  </div>
+
+</div>
