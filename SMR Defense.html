@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMR Defense - Autonomous Fleet Operations for Critical Infrastructure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #050607;
+  --bg: #080a0b;
+  --coal: #0d1112;
+  --panel: #121617;
+  --panel-2: #171d1f;
+  --line: rgba(189, 205, 199, 0.14);
+  --line-strong: rgba(205, 220, 214, 0.24);
+  --text: #eef1ec;
+  --muted: #aeb8b1;
+  --dim: #6f7974;
+  --signal: #a8ba6d;
+  --signal-2: #78977f;
+  --amber: #d99a48;
+  --thermal: #e85f35;
+  --steel: #8aa0a9;
+  --paper: #d9e4e1;
+  --paper-2: #eef1ea;
+  --paper-ink: #111615;
+  --paper-muted: #41504c;
+  --blueprint: #4e7e93;
+  --nav-h: 72px;
+  --display: "Saira Condensed", "Arial Narrow", sans-serif;
+  --body: "Manrope", "Helvetica Neue", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 18px);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    linear-gradient(115deg, rgba(168, 186, 109, 0.06), transparent 34%),
+    linear-gradient(180deg, #090b0c 0%, #050607 42%, #0a0d0e 100%);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 88px 88px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 78%);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(168, 186, 109, 0.28);
+  color: var(--text);
+}
+
+.container {
+  width: min(100% - 48px, 1240px);
+  margin: 0 auto;
+}
+
+.section {
+  position: relative;
+  padding: clamp(76px, 9vw, 132px) 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: calc(var(--nav-h) + 18px);
+}
+
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  color: var(--signal);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.section-kicker::before {
+  content: "";
+  width: 34px;
+  height: 1px;
+  background: currentColor;
+}
+
+.eyebrow {
+  color: var(--signal);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.display {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 8rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.86;
+  text-transform: uppercase;
+  overflow-wrap: normal;
+  text-wrap: balance;
+}
+
+.section-title {
+  margin: 0;
+  max-width: 760px;
+  font-family: var(--display);
+  font-size: 4.8rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.92;
+  text-transform: uppercase;
+  overflow-wrap: normal;
+  text-wrap: balance;
+}
+
+.lead {
+  margin: 22px 0 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.8;
+  overflow-wrap: break-word;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(238, 241, 236, 0.48);
+}
+
+.btn.primary {
+  border-color: rgba(168, 186, 109, 0.62);
+  background: linear-gradient(135deg, var(--signal), #d6c278);
+  color: #10130f;
+}
+
+.btn.primary:hover {
+  border-color: rgba(238, 241, 236, 0.62);
+}
+
+.sr {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.sr.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delay-1 {
+  transition-delay: 90ms;
+}
+
+.delay-2 {
+  transition-delay: 180ms;
+}
+
+.delay-3 {
+  transition-delay: 270ms;
+}
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  height: var(--nav-h);
+  border-bottom: 1px solid rgba(238, 241, 236, 0.12);
+  background: rgba(5, 6, 7, 0.76);
+  backdrop-filter: blur(18px);
+}
+
+.nav-inner {
+  width: min(100% - 48px, 1380px);
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.brand-mark {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(168, 186, 109, 0.68);
+  background:
+    linear-gradient(90deg, transparent 47%, rgba(168, 186, 109, 0.7) 48%, rgba(168, 186, 109, 0.7) 52%, transparent 53%),
+    linear-gradient(0deg, transparent 47%, rgba(168, 186, 109, 0.7) 48%, rgba(168, 186, 109, 0.7) 52%, transparent 53%),
+    linear-gradient(135deg, rgba(168, 186, 109, 0.2), rgba(217, 154, 72, 0.08));
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(238, 241, 236, 0.36);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 30px);
+}
+
+.nav-links a {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 160ms ease;
+  white-space: nowrap;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+.nav-links .nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  min-height: 0;
+  margin-left: 4px;
+  padding: 0 20px;
+  border: 1px solid rgba(168, 186, 109, 0.58);
+  border-radius: 5px;
+  color: var(--signal);
+  line-height: 1;
+}
+
+.nav-mobile-cta {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(168, 186, 109, 0.58);
+  border-radius: 5px;
+  color: var(--signal);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#hero {
+  --hero-rail-space: clamp(132px, 15svh, 176px);
+  position: relative;
+  min-height: max(780px, 100svh);
+  overflow: hidden;
+  padding: calc(var(--nav-h) + 44px) 0 var(--hero-rail-space);
+  isolation: isolate;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+}
+
+.hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left center;
+  filter: saturate(0.94) contrast(1.04);
+}
+
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 7, 0.26) 0%, rgba(5, 6, 7, 0.12) 38%, rgba(5, 6, 7, 0.88) 74%, rgba(5, 6, 7, 0.96) 100%),
+    linear-gradient(180deg, rgba(5, 6, 7, 0.08) 0%, rgba(5, 6, 7, 0.16) 45%, rgba(5, 6, 7, 0.92) 100%);
+}
+
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(168, 186, 109, 0.1), transparent 32%, rgba(232, 95, 53, 0.06) 100%);
+  mix-blend-mode: screen;
+}
+
+.hero-layout {
+  width: min(100% - 48px, 1380px);
+  min-height: calc(100svh - var(--nav-h) - var(--hero-rail-space) - 44px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.7fr);
+  align-items: center;
+  gap: clamp(36px, 7vw, 108px);
+}
+
+.hero-copy {
+  grid-column: 2;
+  align-self: center;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-copy.sr {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.hero-copy .eyebrow {
+  display: block;
+  margin-bottom: 22px;
+}
+
+.hero-copy .display {
+  max-width: 650px;
+  font-size: 3.75rem;
+  line-height: 0.92;
+  color: #f6f7f0;
+  text-shadow: 0 18px 44px rgba(0, 0, 0, 0.66);
+}
+
+.hero-copy .lead {
+  color: #d6ded8;
+  text-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+.hero-copy .lead {
+  max-width: 560px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(22px, 2.6vw, 30px);
+  position: relative;
+  z-index: 4;
+}
+
+.hero-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  border-top: 1px solid rgba(238, 241, 236, 0.13);
+  background: linear-gradient(90deg, rgba(5, 6, 7, 0.78), rgba(13, 17, 18, 0.7));
+  backdrop-filter: blur(12px);
+}
+
+.hero-rail-grid {
+  width: min(100% - 48px, 1380px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rail-cell {
+  display: flex;
+  min-height: 112px;
+  padding: 24px clamp(22px, 2vw, 32px);
+  border-left: 1px solid rgba(238, 241, 236, 0.12);
+  flex-direction: column;
+  justify-content: center;
+}
+
+.rail-cell:first-child {
+  border-left: 0;
+}
+
+.rail-label {
+  display: block;
+  color: var(--dim);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rail-value {
+  display: block;
+  margin-top: 8px;
+  max-width: 25ch;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(380px, 0.58fr);
+  gap: clamp(42px, 8vw, 118px);
+  align-items: start;
+}
+
+.thesis {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+}
+
+.thesis-item {
+  min-height: 154px;
+  padding: clamp(24px, 3.4vw, 38px);
+  background:
+    linear-gradient(135deg, rgba(168, 186, 109, 0.07), transparent 38%),
+    var(--panel);
+}
+
+.thesis-number {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--amber);
+  font-family: var(--display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.thesis-title {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.thesis-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.72;
+}
+
+.asset-stack {
+  display: grid;
+  gap: clamp(66px, 9vw, 118px);
+  margin-top: 58px;
+}
+
+.asset-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.72fr);
+  gap: clamp(32px, 6vw, 76px);
+  align-items: center;
+}
+
+.asset-row.reverse {
+  grid-template-columns: minmax(340px, 0.72fr) minmax(0, 1.08fr);
+}
+
+.asset-row.reverse .asset-media {
+  order: 2;
+}
+
+.asset-showroom {
+  overflow: hidden;
+  border-top: 0;
+  background:
+    linear-gradient(rgba(238, 241, 236, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(238, 241, 236, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 78% 14%, rgba(138, 160, 169, 0.2), transparent 30%),
+    radial-gradient(circle at 18% 72%, rgba(168, 186, 109, 0.12), transparent 34%),
+    linear-gradient(180deg, #111718 0%, #090c0d 54%, #07090a 100%);
+  background-size: 92px 92px, 92px 92px, auto, auto;
+  color: var(--text);
+}
+
+.asset-showroom .section-kicker,
+.asset-showroom .eyebrow {
+  color: var(--signal);
+}
+
+.asset-showroom .section-title,
+.asset-showroom .asset-title {
+  color: var(--text);
+}
+
+.asset-showroom .lead,
+.asset-showroom .asset-copy p {
+  color: var(--muted);
+}
+
+.asset-showroom .signal-list li {
+  color: var(--text);
+}
+
+.asset-showroom .signal-list li::before {
+  border-color: var(--signal);
+  background: rgba(168, 186, 109, 0.16);
+}
+
+.asset-showcase {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.38fr) minmax(0, 1fr);
+  gap: clamp(32px, 7vw, 92px);
+  align-items: end;
+  margin: clamp(42px, 6vw, 84px) 0 clamp(34px, 5vw, 72px);
+  padding-top: clamp(28px, 4vw, 48px);
+  border-top: 1px solid rgba(238, 241, 236, 0.13);
+}
+
+.showcase-copy {
+  align-self: center;
+  max-width: 330px;
+}
+
+.showcase-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 42px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(168, 186, 109, 0.26);
+  background: rgba(168, 186, 109, 0.1);
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.showcase-copy h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 4.45rem;
+  font-weight: 800;
+  line-height: 0.92;
+  text-transform: uppercase;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.showcase-copy p {
+  margin: 18px 0 0;
+  color: var(--muted);
+}
+
+.hardware-stage {
+  position: relative;
+  min-height: clamp(380px, 42vw, 620px);
+  isolation: isolate;
+}
+
+.hardware-stage::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 5%;
+  height: 26%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.2) 36%, transparent 72%);
+  filter: blur(14px);
+  transform: rotate(-5deg);
+  z-index: 0;
+}
+
+.hardware-stage::after {
+  content: "";
+  position: absolute;
+  inset: 8% 4% 12%;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 62% 38%, rgba(138, 160, 169, 0.24), transparent 38%),
+    radial-gradient(circle at 72% 58%, rgba(168, 186, 109, 0.12), transparent 30%);
+  filter: blur(18px);
+}
+
+.hardware-stage img,
+.asset-product img {
+  pointer-events: none;
+  user-select: none;
+}
+
+.hardware-stage img {
+  position: absolute;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 34px 46px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 28px rgba(138, 160, 169, 0.14));
+}
+
+.hardware-quad {
+  right: 11%;
+  bottom: 2%;
+  z-index: 2;
+  width: min(72%, 760px);
+}
+
+.hardware-drone {
+  top: 2%;
+  right: 0;
+  z-index: 3;
+  width: min(41%, 410px);
+  transform: rotate(-4deg);
+}
+
+.hardware-sensor {
+  left: 1%;
+  bottom: 10%;
+  z-index: 1;
+  width: min(18%, 168px);
+}
+
+.stage-marker {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stage-marker::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(168, 186, 109, 0.7);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 186, 109, 0.64) 0 3px, rgba(255, 255, 255, 0.1) 4px 100%);
+  box-shadow: 0 0 0 9px rgba(168, 186, 109, 0.12);
+}
+
+.marker-ground {
+  left: 38%;
+  bottom: 30%;
+}
+
+.marker-air {
+  right: 8%;
+  top: 24%;
+}
+
+.marker-fixed {
+  left: 7%;
+  top: 20%;
+}
+
+.asset-showroom .asset-stack {
+  gap: clamp(72px, 9vw, 122px);
+  margin-top: 0;
+}
+
+.asset-showroom .asset-row {
+  min-height: clamp(440px, 46vw, 620px);
+  padding-top: clamp(34px, 5vw, 56px);
+  border-top: 1px solid rgba(238, 241, 236, 0.13);
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.72fr);
+}
+
+.asset-showroom .asset-row.reverse {
+  grid-template-columns: minmax(340px, 0.72fr) minmax(0, 1.1fr);
+}
+
+.asset-row.reverse .asset-product {
+  order: 2;
+}
+
+.asset-product {
+  position: relative;
+  min-height: clamp(360px, 42vw, 560px);
+  overflow: visible;
+  isolation: isolate;
+}
+
+.asset-product::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 6%;
+  bottom: 6%;
+  height: 22%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.18) 42%, transparent 72%);
+  filter: blur(16px);
+  transform: rotate(-4deg);
+  z-index: 0;
+}
+
+.asset-product::after {
+  content: "";
+  position: absolute;
+  inset: 4% 2%;
+  z-index: 1;
+  border-top: 1px solid rgba(238, 241, 236, 0.12);
+  border-bottom: 1px solid rgba(238, 241, 236, 0.08);
+  transform: skewY(-2deg);
+}
+
+.asset-product img {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 32px 34px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 28px rgba(138, 160, 169, 0.12));
+}
+
+.quadruped-product img {
+  transform: scale(0.99);
+}
+
+.drone-product::before {
+  bottom: 16%;
+  transform: rotate(-8deg);
+}
+
+.drone-product img {
+  transform: translateY(-1%) scale(1);
+}
+
+.spec-ring {
+  position: absolute;
+  z-index: 3;
+  width: clamp(42px, 5vw, 64px);
+  height: clamp(42px, 5vw, 64px);
+  border: 2px solid rgba(168, 186, 109, 0.62);
+  border-radius: 50%;
+  background: rgba(238, 241, 236, 0.08);
+  box-shadow: 0 0 0 10px rgba(168, 186, 109, 0.1);
+}
+
+.quadruped-product .ring-one {
+  left: 17%;
+  top: 28%;
+}
+
+.quadruped-product .ring-two {
+  right: 16%;
+  bottom: 16%;
+}
+
+.drone-product .ring-one {
+  left: 45%;
+  top: 20%;
+}
+
+.drone-product .ring-two {
+  right: 18%;
+  bottom: 30%;
+}
+
+.media-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+}
+
+.media-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 58%, rgba(5, 6, 7, 0.38)),
+    linear-gradient(135deg, rgba(168, 186, 109, 0.1), transparent 44%, rgba(217, 154, 72, 0.08));
+}
+
+.media-frame img {
+  width: 100%;
+  height: 100%;
+  min-height: 430px;
+  object-fit: cover;
+}
+
+.asset-copy {
+  max-width: 520px;
+}
+
+.asset-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 3.75rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.asset-copy p {
+  margin: 20px 0 0;
+  color: var(--muted);
+}
+
+.signal-list {
+  display: grid;
+  gap: 12px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.signal-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.signal-list li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-top: 7px;
+  border: 1px solid var(--signal);
+  background: rgba(168, 186, 109, 0.16);
+}
+
+.operations {
+  background:
+    linear-gradient(105deg, rgba(168, 186, 109, 0.06), transparent 42%),
+    linear-gradient(180deg, rgba(18, 22, 23, 0.9), rgba(7, 9, 10, 0.96));
+}
+
+.ops-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.72fr) minmax(0, 1.1fr);
+  gap: clamp(34px, 6vw, 82px);
+  align-items: center;
+}
+
+.ops-image img {
+  min-height: 500px;
+}
+
+.process {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: clamp(42px, 6vw, 72px);
+  background: var(--line);
+}
+
+.process-step {
+  min-height: 182px;
+  padding: 28px;
+  background: rgba(8, 10, 11, 0.82);
+}
+
+.process-step span {
+  display: block;
+  margin-bottom: 28px;
+  color: var(--amber);
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.process-step h3 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.process-step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(340px, 0.62fr);
+  gap: clamp(34px, 6vw, 84px);
+  align-items: center;
+}
+
+.thermal-wrap {
+  position: relative;
+}
+
+.thermal-wrap .media-frame {
+  border-color: rgba(232, 95, 53, 0.34);
+}
+
+.thermal-wrap .media-frame::after {
+  background: linear-gradient(180deg, transparent 56%, rgba(5, 6, 7, 0.2));
+}
+
+.thermal-wrap img {
+  min-height: 470px;
+}
+
+.thermal-badge {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 36px);
+  padding: 12px 14px;
+  border: 1px solid rgba(232, 95, 53, 0.5);
+  border-radius: 4px;
+  background: rgba(6, 7, 8, 0.76);
+  backdrop-filter: blur(12px);
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.thermal-badge::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--thermal);
+  box-shadow: 0 0 18px rgba(232, 95, 53, 0.68);
+}
+
+.diagnostics {
+  display: grid;
+  gap: 1px;
+  margin-top: 30px;
+  background: var(--line);
+}
+
+.diag-row {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  background: var(--panel);
+}
+
+.diag-key {
+  padding: 18px;
+  border-right: 1px solid var(--line);
+  color: var(--signal);
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.diag-val {
+  padding: 18px 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.fleet-band {
+  padding-bottom: clamp(92px, 10vw, 148px);
+}
+
+.fleet-visual {
+  position: relative;
+  min-height: clamp(520px, 64vw, 760px);
+  margin-top: 54px;
+  overflow: hidden;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.fleet-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  object-fit: cover;
+}
+
+.fleet-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 7, 0.88), rgba(5, 6, 7, 0.14) 48%, rgba(5, 6, 7, 0.54)),
+    linear-gradient(180deg, rgba(5, 6, 7, 0.02), rgba(5, 6, 7, 0.78));
+}
+
+.fleet-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: min(100% - 48px, 1240px);
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding-bottom: clamp(28px, 5vw, 66px);
+}
+
+.coverage-panel {
+  width: min(100%, 430px);
+  padding: 26px;
+  border: 1px solid rgba(238, 241, 236, 0.18);
+  border-radius: 8px;
+  background: rgba(8, 10, 11, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.coverage-panel h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 0.96;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.coverage-panel p {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.coverage-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  width: min(100%, 620px);
+  background: rgba(238, 241, 236, 0.16);
+}
+
+.coverage-metric {
+  min-height: 116px;
+  padding: 20px;
+  background: rgba(8, 10, 11, 0.75);
+  backdrop-filter: blur(12px);
+}
+
+.coverage-metric strong {
+  display: block;
+  color: var(--signal);
+  font-family: var(--display);
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.coverage-metric span {
+  display: block;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.compliance-band {
+  background:
+    linear-gradient(180deg, rgba(18, 22, 23, 0.96), rgba(8, 10, 11, 0.96)),
+    linear-gradient(120deg, rgba(217, 154, 72, 0.08), transparent);
+}
+
+.compliance-header {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(340px, 0.5fr);
+  gap: clamp(34px, 6vw, 84px);
+  align-items: end;
+}
+
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 52px;
+  background: var(--line);
+}
+
+.compliance-card {
+  min-height: 248px;
+  padding: 30px;
+  background: var(--panel);
+}
+
+.compliance-card span {
+  display: block;
+  margin-bottom: 28px;
+  color: var(--amber);
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.compliance-card h3 {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 1.02rem;
+  line-height: 1.32;
+}
+
+.compliance-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.68;
+}
+
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 52px;
+  background: var(--line);
+}
+
+.audience-card {
+  min-height: 210px;
+  padding: 28px;
+  background:
+    linear-gradient(135deg, rgba(138, 160, 169, 0.08), transparent 46%),
+    var(--panel);
+}
+
+.audience-card h3 {
+  margin: 0 0 12px;
+  font-family: var(--display);
+  font-size: 1.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.audience-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+#cta {
+  padding: clamp(88px, 10vw, 150px) 0;
+  background:
+    linear-gradient(130deg, rgba(168, 186, 109, 0.13), transparent 44%),
+    linear-gradient(90deg, rgba(217, 154, 72, 0.1), transparent 58%),
+    #080a0b;
+  scroll-margin-top: calc(var(--nav-h) + 18px);
+}
+
+.cta-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(360px, 0.54fr);
+  gap: clamp(36px, 7vw, 96px);
+  align-items: end;
+}
+
+.contact-panel {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+}
+
+.contact-link {
+  display: block;
+  padding: 28px;
+  background: rgba(18, 22, 23, 0.86);
+  text-decoration: none;
+  transition: background 180ms ease;
+}
+
+.contact-link:hover {
+  background: rgba(28, 34, 35, 0.9);
+}
+
+.contact-link span {
+  display: block;
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.contact-link strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.contact-link em {
+  display: block;
+  margin-top: 10px;
+  color: var(--signal);
+  font-style: normal;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 28px 0;
+  color: var(--dim);
+}
+
+.footer-inner {
+  width: min(100% - 48px, 1380px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 1080px) {
+  #hero {
+    --hero-rail-space: 252px;
+    min-height: max(860px, 100svh);
+  }
+
+  .display {
+    font-size: 5.25rem;
+  }
+
+  .section-title {
+    font-size: 4rem;
+  }
+
+  .hero-copy .display {
+    font-size: 3.75rem;
+  }
+
+  .asset-title,
+  .showcase-copy h3 {
+    font-size: 3.4rem;
+  }
+
+  .nav-links {
+    gap: 18px;
+  }
+
+  .hero-layout,
+  .intro-grid,
+  .asset-row,
+  .asset-row.reverse,
+  .ops-grid,
+  .intelligence-grid,
+  .compliance-header,
+  .cta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy {
+    grid-column: 1;
+    width: min(100%, 620px);
+    margin-left: auto;
+  }
+
+  .asset-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase-copy {
+    max-width: 560px;
+  }
+
+  .asset-showroom .asset-row,
+  .asset-showroom .asset-row.reverse {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .asset-row.reverse .asset-product {
+    order: 0;
+  }
+
+  .asset-row.reverse .asset-media {
+    order: 0;
+  }
+
+  .process,
+  .compliance-grid,
+  .audience-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-rail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rail-cell:nth-child(3) {
+    border-left: 0;
+  }
+
+  .fleet-overlay {
+    align-items: flex-start;
+    justify-content: flex-end;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --nav-h: 64px;
+  }
+
+  html {
+    scroll-padding-top: calc(var(--nav-h) + 14px);
+  }
+
+  .container,
+  .nav-inner,
+  .hero-layout,
+  .hero-rail-grid,
+  .footer-inner {
+    width: min(100% - 32px, 1240px);
+  }
+
+  .section,
+  #cta {
+    scroll-margin-top: calc(var(--nav-h) + 14px);
+  }
+
+  .section {
+    padding: 64px 0;
+  }
+
+  .section-kicker {
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 0.66rem;
+  }
+
+  .section-kicker::before {
+    width: 28px;
+  }
+
+  .lead {
+    margin-top: 16px;
+    font-size: 1rem;
+    line-height: 1.68;
+  }
+
+  .btn {
+    min-height: 50px;
+    padding: 0 18px;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-inner {
+    gap: 14px;
+  }
+
+  .brand {
+    font-size: 1.02rem;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+  }
+
+  .nav-mobile-cta {
+    display: inline-flex;
+  }
+
+  #hero {
+    --hero-rail-space: 0px;
+    min-height: 0;
+    padding-top: calc(var(--nav-h) + 48px);
+    padding-bottom: 0;
+  }
+
+  .hero-layout {
+    min-height: 0;
+    align-items: start;
+    padding-bottom: 30px;
+  }
+
+  .hero-copy {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .hero-bg img {
+    object-position: 30% center;
+  }
+
+  .hero-bg::after {
+    background:
+      linear-gradient(90deg, rgba(5, 6, 7, 0.42), rgba(5, 6, 7, 0.72)),
+      linear-gradient(180deg, rgba(5, 6, 7, 0.08), rgba(5, 6, 7, 0.94));
+  }
+
+  .hero-rail {
+    position: relative;
+  }
+
+  .hero-rail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: rgba(238, 241, 236, 0.12);
+  }
+
+  .rail-cell,
+  .rail-cell:nth-child(3) {
+    min-height: 112px;
+    padding: 16px;
+    border: 0;
+    background: rgba(8, 10, 11, 0.74);
+  }
+
+  .rail-label {
+    font-size: 0.61rem;
+    letter-spacing: 0.12em;
+  }
+
+  .rail-value {
+    max-width: none;
+    font-size: 0.82rem;
+    line-height: 1.36;
+  }
+
+  .hero-actions {
+    gap: 10px;
+  }
+
+  .hero-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .asset-showroom {
+    background-size: 64px 64px, 64px 64px, auto, auto;
+  }
+
+  .asset-showcase {
+    margin: 36px 0 46px;
+    padding-top: 30px;
+  }
+
+  .showcase-index {
+    width: 58px;
+    height: 38px;
+  }
+
+  .hardware-stage {
+    min-height: 360px;
+    margin: 0;
+  }
+
+  .hardware-quad {
+    right: -2%;
+    bottom: 2%;
+    width: 94%;
+  }
+
+  .hardware-drone {
+    top: 2%;
+    right: 0;
+    width: 54%;
+  }
+
+  .hardware-sensor {
+    left: 2%;
+    bottom: 12%;
+    width: 25%;
+  }
+
+  .stage-marker {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .stage-marker::before {
+    width: 28px;
+    height: 28px;
+    box-shadow: 0 0 0 7px rgba(78, 126, 147, 0.13);
+  }
+
+  .asset-product {
+    min-height: 330px;
+  }
+
+  .asset-product::after {
+    inset: 2% 0;
+  }
+
+  .display {
+    font-size: 3rem;
+    line-height: 0.92;
+  }
+
+  .hero-copy .display,
+  .section-title {
+    font-size: 2.75rem;
+    line-height: 0.92;
+  }
+
+  .process,
+  .compliance-grid,
+  .audience-grid,
+  .coverage-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-title,
+  .showcase-copy h3 {
+    font-size: 2.65rem;
+  }
+
+  .thesis-item,
+  .process-step,
+  .compliance-card,
+  .audience-card {
+    min-height: 0;
+    padding: 28px;
+  }
+
+  .thesis-number,
+  .process-step span,
+  .compliance-card span {
+    margin-bottom: 16px;
+  }
+
+  .asset-stack,
+  .asset-showroom .asset-stack {
+    gap: 58px;
+  }
+
+  .process,
+  .compliance-grid,
+  .audience-grid {
+    margin-top: 36px;
+  }
+
+  .media-frame img,
+  .ops-image img,
+  .thermal-wrap img {
+    min-height: 290px;
+  }
+
+  .fleet-visual {
+    display: grid;
+    min-height: 0;
+    margin-top: 36px;
+  }
+
+  .fleet-visual img {
+    height: 330px;
+    min-height: 0;
+    object-position: center center;
+  }
+
+  .fleet-visual::after {
+    bottom: auto;
+    height: 330px;
+  }
+
+  .fleet-overlay {
+    position: relative;
+    inset: auto;
+    z-index: 3;
+    width: 100%;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: rgba(238, 241, 236, 0.16);
+  }
+
+  .coverage-panel {
+    width: 100%;
+    padding: 24px;
+    border: 0;
+    border-radius: 0;
+    background: rgba(8, 10, 11, 0.86);
+    backdrop-filter: none;
+  }
+
+  .coverage-metrics {
+    width: 100%;
+  }
+
+  .coverage-metric {
+    min-height: 0;
+    padding: 18px 20px;
+  }
+
+  .diag-row {
+    grid-template-columns: 1fr;
+  }
+
+  .diag-key {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+
+  .diag-val {
+    padding-top: 12px;
+  }
+
+  .footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .container,
+  .nav-inner,
+  .hero-layout,
+  .hero-rail-grid,
+  .footer-inner {
+    width: min(100% - 28px, 1240px);
+  }
+
+  .brand {
+    gap: 10px;
+    font-size: 0.94rem;
+    letter-spacing: 0.07em;
+  }
+
+  .nav-mobile-cta {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.62rem;
+  }
+
+  .hero-copy .display,
+  .section-title {
+    font-size: 2.4rem;
+  }
+
+  .asset-title,
+  .showcase-copy h3 {
+    font-size: 2.35rem;
+  }
+
+  .rail-cell,
+  .rail-cell:nth-child(3) {
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .hardware-stage {
+    min-height: 310px;
+  }
+
+  .asset-product {
+    min-height: 300px;
+  }
+
+  .media-frame img,
+  .ops-image img,
+  .thermal-wrap img {
+    min-height: 260px;
+  }
+
+  .fleet-visual img,
+  .fleet-visual::after {
+    height: 286px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .sr {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="#hero" class="brand" aria-label="SMR Defense home"><span class="brand-mark"></span>SMR Defense</a>
+    <div class="nav-links" aria-label="Primary navigation">
+      <a href="#fleet">Fleet</a>
+      <a href="#assets">Assets</a>
+      <a href="#operations">Operations</a>
+      <a href="#intelligence">Intelligence</a>
+      <a href="#cta" class="nav-cta">Request Briefing</a>
+    </div>
+    <a href="#cta" class="nav-mobile-cta">Briefing</a>
+  </div>
+</nav>
+
+<main>
+  <section id="hero" aria-labelledby="hero-title">
+    <div class="hero-bg" aria-hidden="true">
+      <img src="uploads/smr-hero-grid-yard.png" alt="" width="1915" height="821" fetchpriority="high" decoding="async">
+    </div>
+    <div class="hero-layout">
+      <div class="hero-copy sr">
+        <span class="eyebrow">Continuous site coverage</span>
+        <h1 id="hero-title" class="display">Cover every route.<br>Document every pass.<br>Catch issues early.</h1>
+        <p class="lead">SMR Defense deploys and runs robotic fleets for infrastructure sites where staffing, inspections, and documentation cannot keep up with the requirement.</p>
+        <div class="hero-actions">
+          <a href="#cta" class="btn primary">Request a Briefing</a>
+          <a href="#assets" class="btn">See Coverage</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-rail" aria-label="Deployment summary">
+      <div class="hero-rail-grid">
+        <div class="rail-cell">
+          <span class="rail-label">Coverage</span>
+          <span class="rail-value">Patrol and inspection routes run continuously</span>
+        </div>
+        <div class="rail-cell">
+          <span class="rail-label">Documentation</span>
+          <span class="rail-value">Every pass produces a usable site record</span>
+        </div>
+        <div class="rail-cell">
+          <span class="rail-label">Escalation</span>
+          <span class="rail-value">Anomalies arrive with location and context</span>
+        </div>
+        <div class="rail-cell">
+          <span class="rail-label">Burden</span>
+          <span class="rail-value">No robot headcount or hardware workload</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fleet" class="section" aria-labelledby="fleet-title">
+    <div class="container intro-grid">
+      <div class="sr">
+        <span class="section-kicker">The gap</span>
+        <h2 id="fleet-title" class="section-title">The workforce cannot scale to the sites coming online.</h2>
+        <p class="lead">Power demand, AI infrastructure, distributed energy, and tighter compliance requirements are forcing operators to monitor more assets, more often, with better proof. Most site assets still sit between checks. Failures are found after they happen. Security and O&amp;M records live in separate systems. SMR Defense changes that with continuous coverage, unified documentation, and predictive escalation.</p>
+      </div>
+      <div class="thesis sr delay-1">
+        <article class="thesis-item">
+          <span class="thesis-number">01</span>
+          <h3 class="thesis-title">Continuous coverage</h3>
+          <p>Routes run on schedule across yards, perimeters, equipment lanes, and hard-to-staff areas.</p>
+        </article>
+        <article class="thesis-item">
+          <span class="thesis-number">02</span>
+          <h3 class="thesis-title">Unified documentation</h3>
+          <p>Security, inspection, and maintenance evidence lands in one consistent site record.</p>
+        </article>
+        <article class="thesis-item">
+          <span class="thesis-number">03</span>
+          <h3 class="thesis-title">Earlier escalation</h3>
+          <p>Thermal, visual, and route exceptions are flagged before they become outages or findings.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="assets" class="section asset-showroom" aria-labelledby="assets-title">
+    <div class="container">
+      <div class="sr" style="max-width: 790px;">
+        <span class="section-kicker">Field assets</span>
+        <h2 id="assets-title" class="section-title">Consistent coverage through terrain crews cannot check often enough.</h2>
+        <p class="lead">Ground robots, aerial drones, and fixed sensors work from the same coverage requirement: more frequent checks, better evidence, and fewer blind spots between manual rounds.</p>
+      </div>
+
+      <div class="asset-showcase sr delay-1">
+        <div class="showcase-copy">
+          <span class="showcase-index">01 / 03</span>
+          <h3>Hardware assigned to the coverage map.</h3>
+          <p>The site gets the right mix of ground, air, and fixed sensing against the routes and assets that need proof.</p>
+        </div>
+        <div class="hardware-stage" aria-hidden="true">
+          <img class="hardware-sensor" src="uploads/smr-cutout-sensor-trim.png" alt="" width="494" height="1021" loading="lazy" decoding="async">
+          <img class="hardware-quad" src="uploads/smr-cutout-quadruped-trim.png" alt="" width="1047" height="929" loading="lazy" decoding="async">
+          <img class="hardware-drone" src="uploads/smr-cutout-drone-trim.png" alt="" width="1598" height="703" loading="lazy" decoding="async">
+          <span class="stage-marker marker-fixed">Fixed sensing</span>
+          <span class="stage-marker marker-ground">Ground route</span>
+          <span class="stage-marker marker-air">Aerial sweep</span>
+        </div>
+      </div>
+
+      <div class="asset-stack">
+        <article class="asset-row">
+          <figure class="asset-product quadruped-product sr" aria-label="Rugged quadruped inspection robot">
+            <img src="uploads/smr-cutout-quadruped-trim.png" alt="Rugged quadruped inspection robot" width="1047" height="929" loading="lazy" decoding="async">
+            <span class="spec-ring ring-one" aria-hidden="true"></span>
+            <span class="spec-ring ring-two" aria-hidden="true"></span>
+          </figure>
+          <div class="asset-copy sr delay-1">
+            <span class="eyebrow">Ground robotics</span>
+            <h3 class="asset-title">Repeatable patrols through difficult site terrain.</h3>
+            <p>Ground robots run documented routes through lanes, stairs, gravel, wet concrete, and equipment corridors that are too irregular for fixed cameras and too frequent for manual walkdowns.</p>
+            <ul class="signal-list">
+              <li>Consistent perimeter and equipment checks</li>
+              <li>Route evidence tied to time and location</li>
+              <li>Exceptions escalated with inspection context</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="asset-row reverse">
+          <figure class="asset-product drone-product sr" aria-label="Industrial inspection drone">
+            <img src="uploads/smr-cutout-drone-trim.png" alt="Industrial inspection drone with sensor payload" width="1598" height="703" loading="lazy" decoding="async">
+            <span class="spec-ring ring-one" aria-hidden="true"></span>
+            <span class="spec-ring ring-two" aria-hidden="true"></span>
+          </figure>
+          <div class="asset-copy sr delay-1">
+            <span class="eyebrow">Aerial inspection</span>
+            <h3 class="asset-title">Faster reach across wide and elevated assets.</h3>
+            <p>Drones extend coverage to rooftops, fence lines, overhead equipment, cooling systems, and wide yards when speed, angle, or distance makes ground inspection too slow.</p>
+            <ul class="signal-list">
+              <li>Rapid visual and thermal sweeps</li>
+              <li>Incident views delivered before crews arrive</li>
+              <li>Coverage across roofs, yards, and elevated equipment</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="operations" class="section operations" aria-labelledby="operations-title">
+    <div class="container ops-grid">
+      <div class="sr">
+        <span class="section-kicker">Managed operations</span>
+        <h2 id="operations-title" class="section-title">Coverage without another fleet to manage.</h2>
+        <p class="lead">Your team receives documented patrols, inspection findings, and escalations with context. SMR Defense runs the routes, maintains the equipment, and keeps coverage moving without adding robot operators to your headcount.</p>
+        <ul class="signal-list">
+          <li>Coverage status without onsite robot staffing</li>
+          <li>Maintenance handled before it becomes your burden</li>
+          <li>Escalations reviewed before they reach your team</li>
+        </ul>
+      </div>
+      <figure class="ops-image media-frame sr delay-1">
+        <img src="uploads/smr-remote-operations.png" alt="Remote operations center monitoring industrial robotics sites" width="1672" height="941" loading="lazy" decoding="async">
+      </figure>
+    </div>
+    <div class="container">
+      <div class="process sr delay-2" aria-label="Managed service process">
+        <article class="process-step">
+          <span>01</span>
+          <h3>Assess the site</h3>
+          <p>Walk the requirement: assets, routes, blind spots, documentation needs, and escalation rules.</p>
+        </article>
+        <article class="process-step">
+          <span>02</span>
+          <h3>Deploy the fleet</h3>
+          <p>Place the right ground, air, and fixed assets against the routes your site needs covered.</p>
+        </article>
+        <article class="process-step">
+          <span>03</span>
+          <h3>Operate continuously</h3>
+          <p>Run patrols and inspections on schedule, with exceptions reviewed and routed to the right owner.</p>
+        </article>
+        <article class="process-step">
+          <span>04</span>
+          <h3>Document outcomes</h3>
+          <p>Deliver records your security, compliance, facilities, and maintenance teams can use.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="economics" class="section" aria-labelledby="economics-title">
+    <div class="container">
+      <div class="compliance-header">
+        <div class="sr">
+          <span class="section-kicker">Economics</span>
+          <h2 id="economics-title" class="section-title">Consolidate coverage, documentation, and inspection spend.</h2>
+        </div>
+        <p class="lead sr delay-1">Before SMR Defense, coverage is split across staffing, inspection contractors, security vendors, manual reporting, and rising insurance pressure. After deployment, one annual subscription per site covers patrol, inspection, escalation, and documentation.</p>
+      </div>
+      <div class="compliance-grid">
+        <article class="compliance-card sr">
+          <span>Before / Labor</span>
+          <h3>Coverage depends on headcount</h3>
+          <p>Continuous patrol and inspection coverage usually means adding people, shifts, supervision, and management overhead before coverage approaches the requirement.</p>
+        </article>
+        <article class="compliance-card sr delay-1">
+          <span>Before / Vendors</span>
+          <h3>Security and O&amp;M records stay separate</h3>
+          <p>Separate vendors create separate budgets, separate handoffs, and separate records when the site needs one view of what happened.</p>
+        </article>
+        <article class="compliance-card sr delay-2">
+          <span>Before / Risk</span>
+          <h3>Most assets sit between checks</h3>
+          <p>Large portions of the site sit between checks while insurance pressure rises and the evidence needed to support risk conversations remains incomplete.</p>
+        </article>
+        <article class="compliance-card sr delay-3">
+          <span>After / Subscription</span>
+          <h3>One site coverage budget</h3>
+          <p>A fixed annual subscription consolidates coverage and documentation, with real-time measurement and verification data to support insurance conversations.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="intelligence" class="section" aria-labelledby="intelligence-title">
+    <div class="container intelligence-grid">
+      <div class="thermal-wrap sr">
+        <figure class="media-frame">
+          <img src="uploads/smr-thermal-anomaly.png" alt="Thermal view of an overheated electrical connection" width="1389" height="1132" loading="lazy" decoding="async">
+        </figure>
+        <div class="thermal-badge">Thermal anomaly detected</div>
+      </div>
+      <div class="sr delay-1">
+        <span class="section-kicker">Inspection intelligence</span>
+        <h2 id="intelligence-title" class="section-title">Patrol data becomes maintenance action.</h2>
+        <p class="lead">Thermal anomalies are flagged before they become outages. Physical changes are logged before they become compliance findings. Repeat exceptions are tracked across time instead of rediscovered on the next manual round.</p>
+        <div class="diagnostics" aria-label="Diagnostic outputs">
+          <div class="diag-row">
+            <div class="diag-key">Detect</div>
+            <div class="diag-val">Robotic patrols capture heat, visual change, route deviation, and site exceptions during scheduled coverage.</div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-key">Verify</div>
+            <div class="diag-val">Operators review the finding, confirm the context, and remove noise before the issue reaches your team.</div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-key">Record</div>
+            <div class="diag-val">The result is saved with location, time, image evidence, and enough history to support the next action.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fleet-band" aria-labelledby="orchestration-title">
+    <div class="container sr" style="max-width: 820px;">
+      <span class="section-kicker">Fleet orchestration</span>
+      <h2 id="orchestration-title" class="section-title">One coverage picture across ground, air, and fixed sensing.</h2>
+      <p class="lead">Your team should not manage three separate tools. SMR Defense gives the site one coverage view, one escalation stream, and one audit trail across patrol, inspection, and monitoring activity.</p>
+    </div>
+    <div class="fleet-visual sr delay-1">
+      <img src="uploads/smr-fleet-orchestration.png" alt="Coordinated ground robot and drone operating across a substation yard" width="1672" height="941" loading="lazy" decoding="async">
+      <div class="fleet-overlay">
+        <div class="coverage-panel">
+          <h3>One record for the site.</h3>
+          <p>Ground robots, drones, and fixed sensors cover different parts of the requirement, but the operator receives one record of what was checked, what changed, and what needs action.</p>
+        </div>
+        <div class="coverage-metrics">
+          <div class="coverage-metric">
+            <strong>01</strong>
+            <span>Ground patrol and close inspection</span>
+          </div>
+          <div class="coverage-metric">
+            <strong>02</strong>
+            <span>Aerial scan and incident context</span>
+          </div>
+          <div class="coverage-metric">
+            <strong>03</strong>
+            <span>Fixed sensing and audit trail</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section compliance-band" aria-labelledby="compliance-title">
+    <div class="container">
+      <div class="compliance-header">
+        <div class="sr">
+          <span class="section-kicker">Regulated environments</span>
+          <h2 id="compliance-title" class="section-title">Built for sites where documentation is not optional.</h2>
+        </div>
+        <p class="lead sr delay-1">Infrastructure operators already live with deployment discipline, data handling rules, access controls, and audit expectations. SMR Defense fits into that environment from the start.</p>
+      </div>
+      <div class="compliance-grid">
+        <article class="compliance-card sr">
+          <span>01 / Data</span>
+          <h3>Data stays aligned to site requirements</h3>
+          <p>Deployment can support on-premises or private-cloud handling when the site cannot send operational records through open public systems.</p>
+        </article>
+        <article class="compliance-card sr delay-1">
+          <span>02 / Supply chain</span>
+          <h3>Procurement questions are addressed early</h3>
+          <p>Supply chain posture, including domestic-first sourcing where required, is handled as part of deployment planning rather than after approval.</p>
+        </article>
+        <article class="compliance-card sr delay-2">
+          <span>03 / Audit</span>
+          <h3>Coverage produces audit evidence</h3>
+          <p>Routes, inspections, exceptions, and escalations are timestamped so teams can show what happened without rebuilding the record by hand.</p>
+        </article>
+        <article class="compliance-card sr delay-3">
+          <span>04 / Access</span>
+          <h3>Access follows the site rules</h3>
+          <p>Role-based access and controlled remote operations support sensitive workflows, including NERC CIP-style review where relevant.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="who-title">
+    <div class="container">
+      <div class="sr" style="max-width: 780px;">
+        <span class="section-kicker">Who we work with</span>
+        <h2 id="who-title" class="section-title">Operators who cannot afford coverage gaps.</h2>
+        <p class="lead">SMR Defense fits sites where the monitoring requirement has outgrown the available people, vendor structure, and reporting process.</p>
+      </div>
+      <div class="audience-grid">
+        <article class="audience-card sr">
+          <h3>Utilities</h3>
+          <p>Substations, switching yards, and generation sites where inspection frequency, perimeter coverage, and outage prevention all matter.</p>
+        </article>
+        <article class="audience-card sr delay-1">
+          <h3>Data centers</h3>
+          <p>Campuses where uptime pressure, physical security, power infrastructure, and audit documentation land on the same operations team.</p>
+        </article>
+        <article class="audience-card sr delay-2">
+          <h3>Industrial</h3>
+          <p>Large facilities with wide perimeters, hard-to-reach equipment, and inspection routes that cannot be checked often enough by manual rounds.</p>
+        </article>
+        <article class="audience-card sr delay-3">
+          <h3>Government</h3>
+          <p>Sensitive sites where coverage records, access controls, sourcing posture, and response discipline need to hold up under review.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" aria-labelledby="cta-title">
+    <div class="container cta-grid">
+      <div class="sr">
+        <span class="section-kicker">Get in touch</span>
+        <h2 id="cta-title" class="section-title">Tell us about the site.</h2>
+        <p class="lead">Share the footprint, assets, routes, documentation requirement, and current coverage model. We will show how continuous coverage maps against your requirement.</p>
+      </div>
+      <div class="contact-panel sr delay-1">
+        <a class="contact-link" href="mailto:contact@smrdefense.com?subject=Pilot Inquiry">
+          <span>For operators</span>
+          <strong>I need to map coverage against a real site requirement.</strong>
+          <em>Request a site assessment</em>
+        </a>
+        <a class="contact-link" href="mailto:contact@smrdefense.com?subject=Briefing Request">
+          <span>For investors and partners</span>
+          <strong>I want to understand the model and market opportunity.</strong>
+          <em>Request a briefing</em>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>SMR Defense</span>
+    <span>Autonomous fleet operations for critical infrastructure.</span>
+    <span>2026</span>
+  </div>
+</footer>
+
+<script>
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.14 });
+
+document.querySelectorAll(".sr").forEach((item) => revealObserver.observe(item));
+</script>
+</body>
+</html>
