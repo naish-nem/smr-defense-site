@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="720" height="200" role="img" aria-label="SMRDefense">
+  <title>SMRDefense lockup (for light backgrounds)</title>
+  <defs>
+    <linearGradient id="navyLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#1a3554"/>
+      <stop offset="100%" stop-color="#0a1525"/>
+    </linearGradient>
+  </defs>
+  <!-- Mark (raster ref, scaled inline) -->
+  <image href="SMRD-Logo-Mark-512.png" x="0" y="8" width="184" height="184" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Wordmark -->
+  <text x="208" y="132" font-family="Roboto, 'Helvetica Neue', system-ui, sans-serif" font-weight="600" font-size="96" letter-spacing="-1.2" fill="url(#navyLight)">SMRDefense</text>
+</svg>
