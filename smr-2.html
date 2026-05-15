@@ -343,7 +343,6 @@ nav {
   width: 100%; height: 100%;
   object-fit: cover;
   object-position: left center;
-  filter: saturate(0.98) contrast(1.02);
   /* Slow, subtle parallax / scale to add life without distraction */
   animation: heroDrift 28s var(--ease) infinite alternate;
 }
@@ -356,8 +355,7 @@ nav {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(7, 11, 20, 0.04) 0%, rgba(7, 11, 20, 0.04) 35%, rgba(7, 11, 20, 0.62) 65%, rgba(7, 11, 20, 0.82) 100%),
-    linear-gradient(180deg, rgba(7, 11, 20, 0.00) 0%, rgba(7, 11, 20, 0.10) 40%, rgba(7, 11, 20, 0.82) 100%);
+    linear-gradient(90deg, rgba(7, 11, 20, 0.0) 0%, rgba(7, 11, 20, 0.0) 38%, rgba(7, 11, 20, 0.62) 64%, rgba(7, 11, 20, 0.92) 100%);
 }
 
 .hero-layout {
@@ -779,13 +777,57 @@ nav {
 
 /* CTA */
 #cta {
+  position: relative;
+  overflow: hidden;
   padding: clamp(72px, 8vw, 116px) 0;
   background: #070b14;
   border-top: 1px solid var(--line);
   scroll-margin-top: calc(var(--nav-h) + 18px);
   text-align: center;
+  perspective: 2000px;
+  perspective-origin: 100% 50%;
+}
+.cta-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 38%, rgba(0,0,0,1) 78%);
+          mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 38%, rgba(0,0,0,1) 78%);
+}
+.cta-plane {
+  position: absolute;
+  top: 50%;
+  right: -22%;
+  width: clamp(520px, 64vw, 920px);
+  aspect-ratio: 1 / 1;
+  background-image: url("brandkit/SMRD-Logo-Mark-1024.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.038;
+  filter: brightness(2.4) contrast(0.95);
+  transform-origin: 50% 50%;
+  transform: translate3d(0, -50%, 0) rotateY(-22deg) rotateZ(-2deg);
+  will-change: transform;
+  animation: ctaPlaneDrift 40s var(--ease) infinite alternate;
+}
+@keyframes ctaPlaneDrift {
+  from { transform: translate3d(0, -50%, 0)   rotateY(-22deg) rotateZ(-2deg); }
+  to   { transform: translate3d(-1.4%, -52%, 30px) rotateY(-20deg) rotateZ(-1.4deg); }
+}
+.cta-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 40% 55% at 82% 50%, rgba(138, 166, 196, 0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 70% at 50% 50%, rgba(7, 11, 20, 0.4) 0%, transparent 55%);
+  pointer-events: none;
 }
 .cta-inner {
+  position: relative;
+  z-index: 1;
   width: min(100% - 48px, 760px);
   margin: 0 auto;
   display: flex;
@@ -882,20 +924,43 @@ footer {
 
   #hero {
     --hero-rail-space: 0px;
-    min-height: 92svh;
-    padding-top: calc(var(--nav-h) + 24px);
-    padding-bottom: 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    min-height: 0;
+    padding: 0 0 32px;
+    display: block;
+    isolation: auto;
+    overflow: visible;
   }
-  .hero-layout { min-height: 0; align-items: end; padding-bottom: 0; }
-  .hero-copy { width: 100%; margin-left: 0; }
-  .hero-bg img { object-position: center center; }
+  .hero-bg {
+    position: relative;
+    inset: auto;
+    z-index: 0;
+    width: 100%;
+    margin-top: var(--nav-h);
+    overflow: hidden;
+  }
+  .hero-bg picture { display: block; }
+  .hero-bg img {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    object-fit: initial;
+    object-position: initial;
+    animation: none;
+  }
   .hero-bg::after {
     background:
-      linear-gradient(180deg, rgba(5, 6, 7, 0.0) 0%, rgba(5, 6, 7, 0.04) 30%, rgba(5, 6, 7, 0.48) 58%, rgba(5, 6, 7, 0.9) 82%);
+      linear-gradient(180deg, rgba(7, 11, 20, 0) 0%, rgba(7, 11, 20, 0) 60%, rgba(7, 11, 20, 0.55) 88%, rgba(7, 11, 20, 1) 100%);
   }
+  .hero-layout {
+    min-height: 0;
+    margin: 0 auto;
+    padding: 28px 0 0;
+    display: block;
+    align-items: stretch;
+  }
+  .hero-copy { width: 100%; margin-left: 0; }
+  .hero-copy .display { color: #ffffff; text-shadow: none; }
+  .hero-copy .lead { color: var(--muted); text-shadow: none; }
 
   .hero-rail { position: relative; }
   .hero-rail-grid {
@@ -966,6 +1031,21 @@ footer {
   .signal-list li { font-size: 0.88rem; }
 
   .footer-inner { align-items: flex-start; flex-direction: column; }
+
+  #cta { perspective-origin: 110% 50%; }
+  .cta-stage {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 22%, rgba(0,0,0,1) 100%);
+            mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 22%, rgba(0,0,0,1) 100%);
+  }
+  .cta-plane {
+    top: auto;
+    bottom: -18%;
+    right: -36%;
+    width: min(78vw, 360px);
+    transform: translate3d(0, 0, 0) rotateY(-18deg) rotateZ(-2deg);
+    opacity: 0.045;
+    animation: none;
+  }
 }
 
 @media (max-width: 420px) {
@@ -1021,7 +1101,7 @@ footer {
         <h1 id="hero-title" class="display">Autonomous Site Operations for Critical Infrastructure</h1>
         <p class="lead">SMRDefense deploys robotic fleets across energy, data center, and industrial sites &mdash; patrolling, inspecting, and responding before small issues become outages.</p>
         <div class="hero-actions">
-          <a href="#cta" class="btn primary">Explore the system</a>
+          <a href="#raas" class="btn primary">Explore the system</a>
         </div>
       </div>
     </div>
@@ -1078,8 +1158,8 @@ footer {
     <div class="container">
       <div class="sr" style="max-width: 760px;">
         <span class="section-kicker">The System</span>
-        <h2 id="assets-title" class="section-title">One Fleet, Multiple Jobs</h2>
-        <p class="lead">SMRDefense combines air, ground, fixed sensing, and AI into a single operating layer for physical infrastructure.</p>
+        <h2 id="assets-title" class="section-title">Ground and Air, Working the Same Site</h2>
+        <p class="lead">Quadruped patrol robots and inspection drones, coordinated through one operations layer so the same site can be patrolled, inspected, and verified from multiple angles.</p>
       </div>
 
       <div class="asset-stack">
@@ -1124,8 +1204,8 @@ footer {
     <div class="container ops-grid">
       <div class="sr">
         <span class="section-kicker">Operations</span>
-        <h2 id="operations-title" class="section-title">Built for Deployment, Not Demos</h2>
-        <p class="lead">SMRDefense is designed around real sites &mdash; installation, mission setup, field support, and ongoing operations.</p>
+        <h2 id="operations-title" class="section-title">Designed Around How Sites Actually Run</h2>
+        <p class="lead">Installation, mission setup, field support, and day-to-day operations &mdash; planned with site teams, not bolted on after.</p>
         <ul class="signal-list">
           <li>Patrol, inspect, verify, respond</li>
           <li>Repeatable autonomous missions</li>
@@ -1165,7 +1245,7 @@ footer {
     </div>
   </section>
 
-  <section class="section fleet-band" aria-labelledby="orchestration-title">
+  <section id="raas" class="section fleet-band" aria-labelledby="orchestration-title">
     <div class="container sr" style="max-width: 800px;">
       <span class="section-kicker">Managed Fleet Model</span>
       <h2 id="orchestration-title" class="section-title">Robotic Operations as a Service</h2>
@@ -1228,6 +1308,10 @@ footer {
   </section>
 
   <section id="cta" aria-labelledby="cta-title">
+    <div class="cta-stage" aria-hidden="true">
+      <div class="cta-plane"></div>
+      <div class="cta-glow"></div>
+    </div>
     <div class="cta-inner sr">
       <span class="section-kicker">Get In Touch</span>
       <h2 id="cta-title" class="section-title">Let&rsquo;s Talk About Your Sites</h2>
