@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.DS_Store
+
+# Throwaway review/screenshot artifacts
+browser-*.png

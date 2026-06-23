@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FleetBrain OS — Site Twin Proof Frame</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#121a22; --line:#22303c; --ink:#e8eef2; --muted:#8aa0ad;
+    --cyan:#39d0d8; --amber:#f5a623; --red:#ff5470; --green:#33d685;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid var(--line);background:#0e141b}
+  header .mark{width:30px;height:30px;border:2px solid var(--cyan);border-radius:6px;display:grid;place-items:center;
+    font-weight:800;font-family:ui-monospace,Menlo,monospace;color:var(--cyan)}
+  header h1{font-size:15px;margin:0;font-weight:700}
+  header .sub{font-size:12px;color:var(--muted)}
+  .grow{flex:1}
+  .modes{display:flex;gap:4px}
+  .modes button{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 14px;
+    border-radius:999px;font-weight:600;cursor:pointer;font-size:13px}
+  .modes button.active{background:var(--cyan);border-color:var(--cyan);color:#02181a}
+  .stage{position:relative;flex:1;overflow:hidden}
+  #map,#scan{position:absolute;inset:0}
+  #scan{display:none;background:radial-gradient(circle at 50% 40%,#0f1820,#070a0e)}
+  .hidden{display:none!important}
+  /* panels */
+  .panel{position:absolute;background:rgba(14,20,27,.92);border:1px solid var(--line);border-radius:10px;
+    backdrop-filter:blur(8px);font-size:13px}
+  #layers{top:14px;left:14px;padding:12px 14px;width:226px}
+  #layers h3,#timewrap h3,#readout h3{margin:0 0 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .lyr{display:flex;align-items:center;gap:9px;padding:5px 0;cursor:pointer}
+  .lyr input{accent-color:var(--cyan)}
+  .lyr .sw{width:12px;height:12px;border-radius:3px}
+  #timewrap{bottom:16px;left:50%;transform:translateX(-50%);padding:12px 18px;width:min(560px,92%)}
+  .surveys{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  #time{width:100%;accent-color:var(--cyan)}
+  .tnow{color:var(--ink);font-weight:700}
+  #readout{top:14px;right:14px;padding:13px 15px;width:248px}
+  #readout .row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--line)}
+  #readout .row:last-child{border-bottom:0}
+  #readout .k{color:var(--muted)} #readout .v{font-weight:600;text-align:right}
+  .delta{margin-top:8px;padding:8px 10px;border-radius:7px;background:rgba(255,84,112,.12);border:1px solid rgba(255,84,112,.4);color:#ffb3c0;font-size:12px}
+  .delta.ok{background:rgba(51,214,133,.12);border-color:rgba(51,214,133,.4);color:#9af0c4}
+  .chip{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(14,20,27,.9);
+    border:1px solid var(--line);border-radius:6px;padding:5px 12px;font-size:11px;letter-spacing:.06em;color:var(--amber);font-weight:700}
+  footer{padding:7px 16px;border-top:1px solid var(--line);background:#0e141b;font-size:11px;color:var(--muted);
+    display:flex;gap:16px;flex-wrap:wrap}
+  footer b{color:#b9c8d2}
+  .scanlabel{position:absolute;left:14px;bottom:16px;font-size:12px;color:var(--muted);max-width:340px}
+  .scanlabel b{color:var(--cyan)}
+  .legend{position:absolute;right:14px;bottom:16px;font-size:12px;color:var(--muted);
+    background:rgba(14,20,27,.82);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .legend .lg{display:flex;align-items:center;gap:8px;padding:2px 0}
+  .legend .d{width:11px;height:11px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="mark">FB</div>
+    <div>
+      <h1>FleetBrain OS — Site Twin</h1>
+      <div class="sub">Topaz Solar Farm · 35.3833°N, −120.0599°W · ~550 MW · Carrizo Plain, CA</div>
+    </div>
+    <div class="grow"></div>
+    <div class="modes">
+      <button id="m-map" class="active">Site map (2.5D)</button>
+      <button id="m-scan">3D site model</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div id="map"></div>
+    <div id="scan"></div>
+    <div class="chip" id="chip">SAMPLE / RECORDED · real satellite imagery + authored overlays</div>
+
+    <!-- MAP overlays -->
+    <div class="panel" id="layers">
+      <h3>Layers</h3>
+      <label class="lyr"><input type="checkbox" id="ly-perim" checked><span class="sw" style="background:#39d0d8"></span>Perimeter geofence</label>
+      <label class="lyr"><input type="checkbox" id="ly-zones" checked><span class="sw" style="background:#5b8cff"></span>Inspection zones</label>
+      <label class="lyr"><input type="checkbox" id="ly-path" checked><span class="sw" style="background:#f5a623"></span>Patrol path (UGV+UAV)</label>
+      <label class="lyr"><input type="checkbox" id="ly-thermal" checked><span class="sw" style="background:#ff5470"></span>Thermal anomaly</label>
+      <label class="lyr"><input type="checkbox" id="ly-detect" checked><span class="sw" style="background:#fff"></span>Detections</label>
+    </div>
+
+    <div class="panel" id="readout">
+      <h3>Finding</h3>
+      <div class="row"><span class="k">Asset</span><span class="v" id="r-asset">String combiner C-14</span></div>
+      <div class="row"><span class="k">Zone</span><span class="v">Array Block A</span></div>
+      <div class="row"><span class="k">Location</span><span class="v" id="r-loc">35.3841, −120.0571</span></div>
+      <div class="row"><span class="k">ΔT vs neighbors</span><span class="v" id="r-dt">+12.4 °C</span></div>
+      <div class="row"><span class="k">Source</span><span class="v">DJI M4TD · R-JPEG</span></div>
+      <div class="delta" id="r-delta">Δ change detected vs prior survey — hotspot grew 2.1× and spread to 3 modules.</div>
+    </div>
+
+    <div class="panel" id="timewrap">
+      <h3>Surveys · change detection</h3>
+      <div class="surveys"><span>May 12</span><span class="tnow" id="t-label">Jun 16, 2026</span><span>Jun 16</span></div>
+      <input type="range" id="time" min="0" max="1" step="1" value="1">
+    </div>
+
+    <!-- SCAN view labels -->
+    <div class="scanlabel hidden" id="scanlabel">
+      <b>Base site model</b> — the operational twin built from onboarding: site ortho ground
+      (drone survey stand-in) + asset massing, the SLAM occupancy-grid origin, inspection points,
+      the autonomous patrol route, and the live robot. This is what a quadruped's
+      <code>mapManage</code> grid + <code>inspection points</code> + <code>route</code> become, in 3D.
+    </div>
+    <div class="legend hidden" id="legend">
+      <div class="lg"><span class="d" style="background:#7f8c99"></span>buildings / O&amp;M</div>
+      <div class="lg"><span class="d" style="background:#39d0d8"></span>BESS containers</div>
+      <div class="lg"><span class="d" style="background:#f5a623"></span>substation</div>
+      <div class="lg"><span class="d" style="background:#3a4a7a"></span>PV array blocks</div>
+      <div class="lg"><span class="d" style="background:#9af0c4"></span>inspection point</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><b>Real data:</b> Esri World Imagery (real satellite ortho — both views) · coordinates = the real Topaz Solar Farm.</span>
+    <span><b>Illustrative:</b> asset massing, zones, inspection points, patrol route, robot &amp; detections (stand-ins for the site's own drone ortho/DSM + SLAM grid + RTK points).</span>
+  </footer>
+</div>
+
+<script>
+const TOPAZ = [-120.0599, 35.3833];
+
+/* ---------- real georeferenced overlays (coords on the actual array) ---------- */
+function ring(cx, cy, w, h){ // w,h in degrees
+  return [[cx-w,cy-h],[cx+w,cy-h],[cx+w,cy+h],[cx-w,cy+h],[cx-w,cy-h]];
+}
+const perimeter = {type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[ring(-120.0585,35.3845,0.018,0.012)]}};
+const zones = {type:"FeatureCollection",features:[
+  {type:"Feature",properties:{name:"Array Block A"},geometry:{type:"Polygon",coordinates:[ring(-120.0660,35.3880,0.0070,0.0048)]}},
+  {type:"Feature",properties:{name:"BESS Pad"},geometry:{type:"Polygon",coordinates:[ring(-120.0512,35.3812,0.0028,0.0022)]}},
+  {type:"Feature",properties:{name:"Substation"},geometry:{type:"Polygon",coordinates:[ring(-120.0470,35.3868,0.0030,0.0024)]}}
+]};
+const path = {type:"Feature",properties:{},geometry:{type:"LineString",coordinates:[
+  [-120.0700,35.3905],[-120.0640,35.3892],[-120.0600,35.3872],[-120.0560,35.3858],
+  [-120.0512,35.3835],[-120.0480,35.3860],[-120.0470,35.3884]
+]}};
+const HOT = [-120.0571, 35.3841];
+function detections(survey){
+  return {type:"FeatureCollection",features:[
+    {type:"Feature",properties:{kind:"thermal",sev:survey?"critical":"medium"},geometry:{type:"Point",coordinates:HOT}},
+    {type:"Feature",properties:{kind:"intrusion",sev:"info"},geometry:{type:"Point",coordinates:[-120.0469,35.3852]}}
+  ]};
+}
+function thermalBlob(survey){ // grows between surveys
+  const r = survey?0.0012:0.0006;
+  const pts=[]; for(let a=0;a<=360;a+=20){const rad=a*Math.PI/180;pts.push([HOT[0]+r*Math.cos(rad)*1.4,HOT[1]+r*Math.sin(rad)]);}
+  pts.push(pts[0]);
+  return {type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[pts]}};
+}
+
+/* ---------- MapLibre (real satellite of the real site) ---------- */
+const map = new maplibregl.Map({
+  container:"map",
+  style:{version:8,glyphs:"https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",sources:{
+    esri:{type:"raster",tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+      tileSize:256,attribution:"Esri World Imagery"}},
+    layers:[{id:"esri",type:"raster",source:"esri"}]},
+  center:TOPAZ, zoom:14.2, pitch:50, bearing:-18, maxZoom:18
+});
+map.addControl(new maplibregl.NavigationControl({showCompass:true}),"bottom-right");
+
+let survey = 1; // 0 = May, 1 = Jun
+map.on("load", ()=>{
+  map.addSource("perim",{type:"geojson",data:perimeter});
+  map.addLayer({id:"perim-line",type:"line",source:"perim",paint:{"line-color":"#39d0d8","line-width":2,"line-dasharray":[2,1.5]}});
+  map.addLayer({id:"perim-fill",type:"fill",source:"perim",paint:{"fill-color":"#39d0d8","fill-opacity":0.05}});
+
+  map.addSource("zones",{type:"geojson",data:zones});
+  map.addLayer({id:"zones-fill",type:"fill",source:"zones",paint:{"fill-color":"#5b8cff","fill-opacity":0.14}});
+  map.addLayer({id:"zones-line",type:"line",source:"zones",paint:{"line-color":"#5b8cff","line-width":1.4}});
+  map.addLayer({id:"zones-lbl",type:"symbol",source:"zones",layout:{"text-field":["get","name"],"text-size":12,"text-offset":[0,0]},
+    paint:{"text-color":"#cdd9ff","text-halo-color":"#0b0f14","text-halo-width":1.4}});
+
+  map.addSource("therm",{type:"geojson",data:thermalBlob(survey)});
+  map.addLayer({id:"therm",type:"fill",source:"therm",paint:{"fill-color":"#ff5470","fill-opacity":0.42}});
+
+  map.addSource("path",{type:"geojson",data:path});
+  map.addLayer({id:"path",type:"line",source:"path",paint:{"line-color":"#f5a623","line-width":2.4},layout:{"line-cap":"round","line-join":"round"}});
+
+  map.addSource("det",{type:"geojson",data:detections(survey)});
+  map.addLayer({id:"det",type:"circle",source:"det",paint:{
+    "circle-radius":["match",["get","sev"],"critical",9,"medium",7,5],
+    "circle-color":["match",["get","sev"],"critical","#ff5470","medium","#f5a623","#ffffff"],
+    "circle-stroke-color":"#0b0f14","circle-stroke-width":2,
+    "circle-opacity":0.95}});
+
+  const popup=new maplibregl.Popup({offset:12,closeButton:false});
+  map.on("mouseenter","det",e=>{map.getCanvas().style.cursor="pointer";
+    const p=e.features[0].properties; popup.setLngLat(e.lngLat).setHTML(
+      `<b style="color:#ff5470">${p.kind} · ${p.sev}</b>`).addTo(map);});
+  map.on("mouseleave","det",()=>{map.getCanvas().style.cursor="";popup.remove();});
+});
+
+/* layer toggles */
+const toggle=(id,...lyrs)=>{document.getElementById(id).addEventListener("change",e=>{
+  lyrs.forEach(l=>map.getLayer(l)&&map.setLayoutProperty(l,"visibility",e.target.checked?"visible":"none"));});};
+toggle("ly-perim","perim-line","perim-fill");
+toggle("ly-zones","zones-fill","zones-line","zones-lbl");
+toggle("ly-path","path");
+toggle("ly-thermal","therm");
+toggle("ly-detect","det");
+
+/* time slider — change detection */
+const tinput=document.getElementById("time");
+tinput.addEventListener("input",e=>{
+  survey=+e.target.value;
+  document.getElementById("t-label").textContent = survey? "Jun 16, 2026":"May 12, 2026";
+  if(map.getSource("therm")) map.getSource("therm").setData(thermalBlob(survey));
+  if(map.getSource("det")) map.getSource("det").setData(detections(survey));
+  document.getElementById("r-dt").textContent = survey? "+12.4 °C":"+5.1 °C";
+  const d=document.getElementById("r-delta");
+  if(survey){d.className="delta";d.textContent="Δ change detected vs prior survey — hotspot grew 2.1× and spread to 3 modules.";}
+  else{d.className="delta ok";d.textContent="Baseline survey — single-module warm spot, within watch threshold.";}
+});
+
+/* ---------- Three.js 3D BASE SITE MODEL (built-up authored massing on site ortho) ---------- */
+let threeInst=null;
+const C={ pv:[58,74,122], bess:[57,208,216], sub:[245,166,35], bldg:[127,140,153],
+  skid:[150,160,170], point:[154,240,196], route:[245,166,35], robot:[51,214,133],
+  drone:[91,140,255], fence:[57,208,216] };
+
+// polygon helper: rectangle centered at (cx,cy), size wxh, optional rotation (deg)
+function rect(cx,cy,w,h,rot){
+  const hw=w/2,hh=h/2,r=(rot||0)*Math.PI/180,c=Math.cos(r),s=Math.sin(r);
+  return [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([x,y])=>[cx+x*c-y*s, cy+x*s+y*c]);
+}
+
+function siteData(){
+  const buildings=[];
+  // PV array blocks (low, dark) — the bulk of a solar site
+  [[-300,180,260,150],[10,200,300,150],[-280,-120,240,150],[30,-150,300,160]].forEach(([x,y,w,h])=>
+    buildings.push({poly:rect(x,y,w,h),h:3,color:C.pv,name:""}));
+  // O&M / control building near the south entrance
+  buildings.push({poly:rect(-30,-360,40,20),h:8,color:C.bldg,name:"O&M Building"});
+  // Substation cluster (east): control house + 3 transformers
+  buildings.push({poly:rect(300,40,30,18),h:6,color:C.bldg,name:"Substation"});
+  [[280,-10],[300,-10],[320,-10]].forEach(([x,y])=>buildings.push({poly:rect(x,y,9,9),h:6,color:C.sub,name:""}));
+  // BESS container row (center)
+  for(let i=0;i<8;i++) buildings.push({poly:rect(150,-40+i*8,13,3.5),h:3.5,color:C.bess,name:i===0?"BESS Yard":""});
+  // Inverter skids scattered through arrays
+  [[-330,120],[-120,260],[120,150],[-150,-180],[120,-200],[260,180]].forEach(([x,y])=>
+    buildings.push({poly:rect(x,y,6,4),h:2.5,color:C.skid,name:""}));
+
+  // Inspection points (what the quadruped navigates to — pos + label)
+  const points=[
+    {pos:[300,-10],name:"P1 - Transformer T-1"},
+    {pos:[150,-4],name:"P2 - BESS row C"},
+    {pos:[-30,-352],name:"P3 - O&M panel"},
+    {pos:[10,200],name:"P4 - Inverter block"},
+    {pos:[-430,-430],name:"P5 - South gate"},
+    {pos:[300,40],name:"P6 - Substation house"}
+  ];
+  // Autonomous patrol route through the points (closed loop from the dock)
+  const dock=[-90,-360];
+  const route=[dock, [300,-10],[300,40],[150,-4],[10,200],[-430,-430], dock]
+    .map(p=>[p[0],p[1],1]);
+  return {buildings,points,route,dock};
+}
+
+function buildScan(){
+  if(!window.THREE || threeInst) return;
+  const S=siteData();
+  const robotPos=[150,-4]; // on the route, at the BESS point
+  const host=document.getElementById("scan");
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x070a0e);
+  const camera=new THREE.PerspectiveCamera(50,1,1,4000);
+  camera.up.set(0,0,1);
+  camera.position.set(0,-1320,950);
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  host.appendChild(renderer.domElement);
+
+  const root=new THREE.Group();
+  root.rotation.z=-0.18;
+  scene.add(root);
+  scene.add(new THREE.AmbientLight(0xffffff,0.78));
+  const sun=new THREE.DirectionalLight(0xffffff,0.85);
+  sun.position.set(-260,-420,620);
+  scene.add(sun);
+
+  const tex=new THREE.TextureLoader().load("./ortho.png");
+  tex.colorSpace=THREE.SRGBColorSpace;
+  const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(1000,1000),
+    new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0.92})
+  );
+  root.add(ground);
+
+  addFence(root);
+  S.buildings.forEach(b=>addBox(root,b));
+  addLine(root,S.route,C.route,7);
+  S.points.forEach(p=>addCylinder(root,p.pos,8,10,C.point));
+  addCylinder(root,S.dock,9,8,[255,255,255]);
+  addCylinder(root,robotPos,12,12,C.robot);
+  addSphere(root,[10,200,80],10,C.drone);
+  threeInst={renderer,camera,scene,root,labels:[],resize:null,frame:null};
+  addLabel(host,"UGV WOLF - live",robotPos[0],robotPos[1],70);
+  addLabel(host,"UAV - 80 m AGL",10,200,128);
+
+  let dragging=false,lastX=0,lastY=0,distance=1320;
+  host.addEventListener("pointerdown",e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;host.setPointerCapture(e.pointerId);});
+  host.addEventListener("pointerup",()=>{dragging=false;});
+  host.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    root.rotation.z+=(e.clientX-lastX)*0.006;
+    root.rotation.x=Math.max(-0.38,Math.min(0.38,root.rotation.x+(e.clientY-lastY)*0.004));
+    lastX=e.clientX;lastY=e.clientY;
+  });
+  host.addEventListener("wheel",e=>{e.preventDefault();distance=Math.max(620,Math.min(1500,distance+e.deltaY));},{passive:false});
+
+  function resize(){
+    const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+  }
+  function animate(){
+    if(!dragging) root.rotation.z+=0.0007;
+    camera.position.set(0,-distance,distance*0.72);
+    camera.lookAt(0,0,0);
+    renderer.render(scene,camera);
+    updateLabels(host,camera);
+    threeInst.frame=requestAnimationFrame(animate);
+  }
+  threeInst.resize=resize;
+  resize();
+  window.addEventListener("resize",resize);
+  animate();
+}
+
+function addBox(root,b){
+  const xs=b.poly.map(p=>p[0]),ys=b.poly.map(p=>p[1]);
+  const w=Math.max(...xs)-Math.min(...xs),d=Math.max(...ys)-Math.min(...ys);
+  const cx=xs.reduce((a,v)=>a+v,0)/xs.length,cy=ys.reduce((a,v)=>a+v,0)/ys.length;
+  const mat=new THREE.MeshLambertMaterial({color:rgb(C[b.color]?C[b.color]:b.color),transparent:true,opacity:.9});
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,d,b.h*4),mat);
+  mesh.position.set(cx,cy,b.h*2);
+  root.add(mesh);
+}
+
+function addCylinder(root,pos,r,h,color){
+  const mesh=new THREE.Mesh(
+    new THREE.CylinderGeometry(r,r,h,20),
+    new THREE.MeshLambertMaterial({color:rgb(color)})
+  );
+  mesh.position.set(pos[0],pos[1],h/2+3);
+  root.add(mesh);
+}
+
+function addSphere(root,pos,r,color){
+  const mesh=new THREE.Mesh(
+    new THREE.SphereGeometry(r,20,12),
+    new THREE.MeshLambertMaterial({color:rgb(color)})
+  );
+  mesh.position.set(pos[0],pos[1],pos[2]);
+  root.add(mesh);
+}
+
+function addFence(root){
+  const square=rect(0,0,930,930).concat([rect(0,0,930,930)[0]]).map(p=>[p[0],p[1],6]);
+  addLine(root,square,C.fence,4);
+}
+
+function addLine(root,pts,color,z){
+  const geom=new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(p[0],p[1],p[2]||z)));
+  root.add(new THREE.Line(geom,new THREE.LineBasicMaterial({color:rgb(color),linewidth:3})));
+}
+
+function addLabel(host,text,x,y,z){
+  const el=document.createElement("div");
+  el.textContent=text;
+  el.style.cssText="position:absolute;pointer-events:none;padding:4px 7px;border:1px solid #22303c;border-radius:6px;background:rgba(10,15,20,.82);color:#9af0c4;font-size:12px;font-weight:700;transform:translate(-50%,-100%);white-space:nowrap";
+  host.appendChild(el);
+  threeInst?.labels.push({el,pos:new THREE.Vector3(x,y,z)});
+}
+
+function updateLabels(host,camera){
+  if(!threeInst?.labels)return;
+  const w=host.clientWidth,h=host.clientHeight;
+  threeInst.labels.forEach(l=>{
+    const p=l.pos.clone().applyMatrix4(threeInst.root.matrixWorld).project(camera);
+    l.el.style.left=`${(p.x*.5+.5)*w}px`;
+    l.el.style.top=`${(-p.y*.5+.5)*h}px`;
+    l.el.style.display=p.z<1?"block":"none";
+  });
+}
+
+function rgb(c){return (c[0]<<16)+(c[1]<<8)+c[2];}
+
+/* ---------- mode switch ---------- */
+const mMap=document.getElementById("m-map"), mScan=document.getElementById("m-scan");
+function setMode(scan){
+  mMap.classList.toggle("active",!scan); mScan.classList.toggle("active",scan);
+  document.getElementById("map").style.display=scan?"none":"block";
+  document.getElementById("scan").style.display=scan?"block":"none";
+  ["layers","readout","timewrap"].forEach(id=>document.getElementById(id).classList.toggle("hidden",scan));
+  document.getElementById("scanlabel").classList.toggle("hidden",!scan);
+  document.getElementById("legend").classList.toggle("hidden",!scan);
+  document.getElementById("chip").textContent = scan
+    ? "BASE SITE MODEL · site ortho ground + authored asset massing + live robot" : "SAMPLE / RECORDED · real imagery on real coordinates";
+  if(scan && !threeInst) buildScan();
+  if(scan && threeInst?.resize) threeInst.resize();
+  if(!scan) map.resize();
+}
+mMap.onclick=()=>setMode(false);
+mScan.onclick=()=>setMode(true);
+</script>
+</body>
+</html>
