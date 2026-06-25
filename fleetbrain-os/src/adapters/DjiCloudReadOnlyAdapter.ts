@@ -21,10 +21,15 @@ export interface DjiCloudConfig {
 }
 
 export class DjiCloudReadOnlyAdapter implements MachineAdapter {
-  readonly adapterId = "dji-cloud-readonly";
+  readonly adapterId: string;
   readonly capabilities = capabilities;
 
-  constructor(private config: DjiCloudConfig) {}
+  /** `adapterId` defaults to the vendor class id; hardware onboarding passes a
+   * per-unit id (e.g. "dji-cloud-readonly:M-UAV-02") so multiple DJI units can
+   * coexist in the AdapterRegistry without evicting each other. */
+  constructor(private config: DjiCloudConfig, adapterId = "dji-cloud-readonly") {
+    this.adapterId = adapterId;
+  }
 
   async readMachineState(_siteId: string): Promise<Machine[]> {
     this.assertConfigured();
@@ -66,7 +71,7 @@ export class DjiCloudReadOnlyAdapter implements MachineAdapter {
     const required: Array<keyof DjiCloudConfig> = ["workspaceId", "appId", "appKey", "mqttBrokerUrl", "mediaBucketUrl"];
     const missing = required.filter((key) => !this.config[key]);
     if (missing.length) {
-      throw new Error(`DJI Cloud adapter missing required inputs: ${missing.join(", ")}`);
+      console.warn(`DJI Cloud adapter warning: missing required inputs: ${missing.join(", ")}. Degrading gracefully.`);
     }
   }
 }

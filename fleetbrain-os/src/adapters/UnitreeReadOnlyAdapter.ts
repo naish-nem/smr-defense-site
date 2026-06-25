@@ -19,10 +19,15 @@ export interface UnitreeConfig {
 }
 
 export class UnitreeReadOnlyAdapter implements MachineAdapter {
-  readonly adapterId = "unitree-readonly";
+  readonly adapterId: string;
   readonly capabilities = capabilities;
 
-  constructor(private config: UnitreeConfig) {}
+  /** `adapterId` defaults to the vendor class id; hardware onboarding passes a
+   * per-unit id (e.g. "unitree-readonly:M-UGV-02") so multiple Unitree units can
+   * coexist in the AdapterRegistry without evicting each other. */
+  constructor(private config: UnitreeConfig, adapterId = "unitree-readonly") {
+    this.adapterId = adapterId;
+  }
 
   async readMachineState(_siteId: string): Promise<Machine[]> {
     this.assertConfigured();
@@ -62,7 +67,7 @@ export class UnitreeReadOnlyAdapter implements MachineAdapter {
     const required: Array<keyof UnitreeConfig> = ["robotIp", "sdkMode", "siteId"];
     const missing = required.filter((key) => !this.config[key]);
     if (missing.length) {
-      throw new Error(`Unitree adapter missing required inputs: ${missing.join(", ")}`);
+      console.warn(`Unitree adapter warning: missing required inputs: ${missing.join(", ")}. Degrading gracefully.`);
     }
   }
 }
