@@ -22,14 +22,37 @@ export function destinationForDecision(decision: DecisionItem): DispatchDestinat
   const exact = zoneId
     ? siteGeometry.inspectionWaypoints.find((waypoint) => waypoint.zoneId === zoneId)
     : undefined;
-  const fallback =
-    siteGeometry.inspectionWaypoints.find((waypoint) => waypoint.zoneId === "Z-PERIMETER") ??
-    siteGeometry.inspectionWaypoints[0];
 
-  const waypoint = exact ?? fallback;
+  if (exact) {
+    return {
+      point: exact.point,
+      targetZoneId: exact.zoneId,
+      waypointLabel: exact.label
+    };
+  }
+
+  // Fallback if not an exact waypoint:
+  // If the zone exists in siteGeometry, compute its centroid from its vertices
+  const zoneGeo = zoneId ? siteGeometry.zones.find((z) => z.zoneId === zoneId) : undefined;
+  if (zoneGeo && zoneGeo.vertices.length > 0) {
+    const sumX = zoneGeo.vertices.reduce((sum, v) => sum + v.x, 0);
+    const sumY = zoneGeo.vertices.reduce((sum, v) => sum + v.y, 0);
+    const centroid = {
+      x: Math.round(sumX / zoneGeo.vertices.length),
+      y: Math.round(sumY / zoneGeo.vertices.length)
+    };
+    return {
+      point: centroid,
+      targetZoneId: zoneId || "unknown",
+      waypointLabel: `${decision.zoneName || "zone"} centroid`
+    };
+  }
+
+  // Absolute fallback to first waypoint
+  const defaultWaypoint = siteGeometry.inspectionWaypoints[0];
   return {
-    point: waypoint.point,
-    targetZoneId: waypoint.zoneId,
-    waypointLabel: waypoint.label
+    point: defaultWaypoint.point,
+    targetZoneId: defaultWaypoint.zoneId,
+    waypointLabel: `${defaultWaypoint.label} (default fallback)`
   };
 }

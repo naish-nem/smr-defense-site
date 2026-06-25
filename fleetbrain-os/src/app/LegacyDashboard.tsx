@@ -492,7 +492,7 @@ export function LegacyDashboard() {
         type: "assign",
         workOrderId,
         owner: "Field Ops",
-        at: new Date().toISOString()
+        at: record?.generatedAt || PHASE_SUMMARY_NOW
       })
     );
   }
@@ -502,7 +502,7 @@ export function LegacyDashboard() {
       applyWorkOrderAction(current, {
         type: "mark_reviewed",
         workOrderId,
-        at: new Date().toISOString()
+        at: record?.generatedAt || PHASE_SUMMARY_NOW
       })
     );
   }
@@ -512,7 +512,7 @@ export function LegacyDashboard() {
       applyWorkOrderAction(current, {
         type: "escalate",
         workOrderId,
-        at: new Date().toISOString()
+        at: record?.generatedAt || PHASE_SUMMARY_NOW
       })
     );
   }

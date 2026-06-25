@@ -14,6 +14,7 @@ import { SiteTwinView } from "./SiteTwinView";
 import { ProofView } from "./ProofView";
 import { DevView } from "./DevView";
 import { IncidentWorkflow } from "./IncidentWorkflow";
+import { OnboardingView } from "./OnboardingView";
 import { OPERATOR_ROLES, ROLE_LABELS, roleBlockReason, roleCan, type OperatorRole } from "./roles";
 import type { DecisionActionState } from "./DecisionCard";
 import "./console.css";
@@ -27,7 +28,7 @@ import "./console.css";
  * action; it never reads the wall clock for logic.
  */
 
-type Surface = "queue" | "map" | "truth" | "proof" | "incident" | "dev";
+type Surface = "queue" | "map" | "truth" | "proof" | "incident" | "onboarding" | "dev";
 
 /**
  * Demo weather hold: high wind exceeds the UAV airframe envelope. This is a
@@ -47,10 +48,13 @@ const TERMINAL_ACTIONS: ReadonlySet<DecisionActionKind> = new Set([
 ]);
 
 export function Console() {
-  const [surface, setSurface] = useState<Surface>("queue");
+  const [surface, setSurface] = usePersistentState<Surface>(`${STORAGE_PREFIX}.surface`, "queue");
   const [role, setRole] = usePersistentState<OperatorRole>(`${STORAGE_PREFIX}.role`, "operator");
   const [weatherHold, setWeatherHold] = usePersistentState(`${STORAGE_PREFIX}.weatherHold`, false);
-  const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
+  const [selectedDecisionId, setSelectedDecisionId] = usePersistentState<string | null>(
+    `${STORAGE_PREFIX}.selectedDecisionId`,
+    null
+  );
   const [recordsByScenario, setRecordsByScenario] = useState<
     Array<{ scenarioId: ScenarioId; record: SiteRecord }>
   >([]);
@@ -58,6 +62,25 @@ export function Console() {
   const [selectedSituation, setSelectedSituation] = usePersistentState<ScenarioId>(
     `${STORAGE_PREFIX}.selectedSituation`,
     scenarios[0].id
+  );
+
+  // Check URL overrides on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlRole = params.get("role");
+    if (urlRole && ["noc_admin", "operator", "analyst", "viewer"].includes(urlRole)) {
+      setRole(urlRole as OperatorRole);
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [setRole]);
+
+  // Public view flag (if ?public=true, ?role=viewer, or role === "viewer")
+  const isPublicView = typeof window !== "undefined" && (
+    window.location.search.includes("public=true") ||
+    window.location.search.includes("role=viewer") ||
+    role === "viewer"
   );
 
   // Resolved decisions are removed from the queue; track by id.
@@ -75,7 +98,7 @@ export function Console() {
 
   // One router for the whole session, seeded per-situation machine rosters.
   const routerRef = useRef<DecisionActionRouter | null>(null);
-  if (!routerRef.current) {
+  if (!routerRef.current || routerRef.current.auditChain().length !== operatorAudit.length) {
     routerRef.current = new DecisionActionRouter({ seedAudit: operatorAudit });
   }
   const router = routerRef.current;
@@ -162,6 +185,33 @@ export function Console() {
     return <div className="cx-boot">Building situation records…</div>;
   }
 
+  if (isPublicView) {
+    return (
+      <div className="cx-shell cx-public-shell">
+        <header className="cx-topbar cx-public-topbar">
+          <div className="cx-brand">
+            <span className="cx-mark">FB</span>
+            <div>
+              <strong>FleetBrain Proof Portal</strong>
+              <span className="cx-site">{siteName}</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="cx-main">
+          <ProofView
+            situations={scenarios.map((s) => ({ id: s.id, label: s.label }))}
+            selected={selectedSituation}
+            onSelect={setSelectedSituation}
+            record={recordForSituation}
+            decisions={allDecisions.filter((d) => d.situationId === selectedSituation)}
+            operatorAudit={operatorAudit}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="cx-shell">
       <header className="cx-topbar">
@@ -186,6 +236,11 @@ export function Console() {
           <button className={surface === "proof" ? "active" : ""} onClick={() => setSurface("proof")} type="button">
             Proof
           </button>
+          {role === "noc_admin" || role === "operator" ? (
+            <button className={surface === "onboarding" ? "active" : ""} onClick={() => setSurface("onboarding")} type="button">
+              Onboarding
+            </button>
+          ) : null}
         </nav>
         <div className="cx-controls">
           <label className="cx-role">
@@ -228,14 +283,20 @@ export function Console() {
             nowIso={new Date(clockMs).toISOString()}
             result={actionResults[selectedDecision.id]}
             onAction={handleAction}
-            onBack={() => setSurface("queue")}
+            onBack={() => {
+              setSelectedDecisionId(null);
+              setSurface("queue");
+            }}
           />
         ) : null}
 
         {surface === "incident" && !selectedDecision ? (
           <div className="cx-empty">
             <strong>No incident selected.</strong>
-            <button type="button" className="cx-back" onClick={() => setSurface("queue")}>
+            <button type="button" className="cx-back" onClick={() => {
+              setSelectedDecisionId(null);
+              setSurface("queue");
+            }}>
               ← Back to queue
             </button>
           </div>
@@ -274,6 +335,10 @@ export function Console() {
             decisions={allDecisions.filter((d) => d.situationId === selectedSituation)}
             operatorAudit={operatorAudit}
           />
+        ) : null}
+
+        {surface === "onboarding" && (role === "noc_admin" || role === "operator") ? (
+          <OnboardingView nowIso={new Date(clockMs).toISOString()} />
         ) : null}
 
         {surface === "dev" ? <DevView /> : null}

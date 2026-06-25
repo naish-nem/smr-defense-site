@@ -1,4 +1,7 @@
 import { fnv1a } from "../arbiter/CommandArbiter";
+import type { ChainIntegrity } from "../kernel/auditTrailChain";
+
+export type { ChainIntegrity };
 
 /**
  * Operator audit chain — an append-only, FNV-1a hash-chained log of every operator
@@ -101,13 +104,23 @@ export class OperatorAuditChain {
 
   /** Verify the chain is contiguous and untampered. */
   verify(): boolean {
-    let expectedPrev = GENESIS_HASH;
-    for (const rec of this.records) {
-      if (rec.prevHash !== expectedPrev) return false;
-      const recomputed = fnv1a(rec.prevHash + canonicalCore(rec));
-      if (recomputed !== rec.hash) return false;
-      expectedPrev = rec.hash;
-    }
-    return true;
+    return verifyAuditChain(this.records).ok;
   }
+}
+
+/**
+ * Pure chain verification over a list of records in append order — the same check
+ * `OperatorAuditChain.verify()` runs, exposed as a free function so a read-only
+ * surface (e.g. the Proof view) can prove tamper-evidence without holding the
+ * chain instance. Deterministic: recomputes every link from GENESIS.
+ */
+export function verifyAuditChain(records: readonly OperatorAuditRecord[]): ChainIntegrity {
+  let expectedPrev = GENESIS_HASH;
+  for (const rec of records) {
+    if (rec.prevHash !== expectedPrev) return { ok: false, count: records.length, brokenAt: rec.id, head: expectedPrev };
+    const recomputed = fnv1a(rec.prevHash + canonicalCore(rec));
+    if (recomputed !== rec.hash) return { ok: false, count: records.length, brokenAt: rec.id, head: expectedPrev };
+    expectedPrev = rec.hash;
+  }
+  return { ok: true, count: records.length, head: expectedPrev };
 }

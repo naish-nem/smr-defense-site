@@ -2,6 +2,7 @@ import type { MachineAdapter, SiteRecord } from "../domain/types";
 import { buildSiteRecord } from "../domain/siteRecordBuilder";
 import { EventIngestionService } from "./EventIngestionService";
 import { FleetBrainStore } from "./FleetBrainStore";
+import { chainAuditTrail } from "./auditTrailChain";
 
 export class FleetBrainKernel {
   constructor(
@@ -22,9 +23,15 @@ export class FleetBrainKernel {
       generatedAt: result.health.checkedAt,
       adapterHealth: result.health.status
     });
+
+    const hashedEntries = chainAuditTrail([
+      ...record.auditTrail,
+      ...this.store.listAuditTrail(siteId)
+    ]);
+
     this.store.saveSiteRecord({
       ...record,
-      auditTrail: [...record.auditTrail, ...this.store.listAuditTrail(siteId)]
+      auditTrail: hashedEntries
     });
 
     return this.store.getLatestSiteRecord(siteId) ?? record;

@@ -1287,6 +1287,26 @@
   color: var(--ink);
 }
 
+/* Tamper-evidence verdict on the Proof audit timeline. */
+.cx-integrity {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  padding: 9px 13px;
+  border-radius: 8px;
+  margin: 2px 0 12px;
+  border: 1px solid var(--line);
+}
+.cx-integrity .cx-integrity-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px;
+}
+.cx-integrity.ok { background: var(--green-soft); border-color: var(--green); color: #1f6e43; }
+.cx-integrity.ok .cx-integrity-dot { background: var(--green); }
+.cx-integrity.broken { background: var(--red-soft); border-color: var(--red); color: #8a2c1e; }
+.cx-integrity.broken .cx-integrity-dot { background: var(--red); }
+.cx-integrity code.cx-hash { background: rgba(255,255,255,.5); }
+
 /* --- Dev ----------------------------------------------------------------- */
 .cx-dev-head h1 { margin: 0; font-size: 24px; }
 
@@ -1784,4 +1804,379 @@
 .cx-replay-export:hover {
   background: var(--blue);
   color: #fff;
+}
+
+/* --- Redesigned Incident Workflow (Two-Column Layout) ------------------- */
+.cx-incident-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 32px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.cx-incident-left-col {
+  min-width: 0;
+}
+
+.cx-incident-right-col {
+  position: sticky;
+  top: 96px; /* below topbar */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.cx-right-card {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.cx-right-card h3 {
+  margin: 0 0 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.cx-evidence-hero {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0d1411;
+}
+
+.cx-evidence-hero img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.cx-noframe.large {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--muted);
+  font-size: 14px;
+  gap: 8px;
+}
+
+.cx-noframe-glyph {
+  font-size: 28px;
+  opacity: 0.6;
+}
+
+.cx-telemetry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cx-telemetry-row {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.cx-telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cx-telemetry-header strong {
+  font-size: 14px;
+}
+
+.cx-telemetry-status {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--panel-2);
+}
+
+.cx-telemetry-status.status-online,
+.cx-telemetry-status.status-available,
+.cx-telemetry-status.status-docked {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.cx-telemetry-status.status-in_mission {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.cx-telemetry-status.status-recalled,
+.cx-telemetry-status.status-offline {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.cx-telemetry-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- Public Un-chromed Shell -------------------------------------------- */
+.cx-public-shell {
+  background: var(--bg);
+}
+
+.cx-public-topbar {
+  border-bottom: 2px solid var(--line-strong);
+  background: var(--panel);
+}
+
+/* --- Responsive Stacking for 1024px & 480px ---------------------------- */
+@media (max-width: 1024px) {
+  .cx-incident-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .cx-incident-right-col {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cx-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .cx-switch {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+  .cx-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cx-dev {
+    align-self: flex-start;
+  }
+}
+
+/* --- Onboarding surface ------------------------------------------------- */
+.cx-onboarding {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cx-onboard-tabs {
+  display: flex;
+  gap: 8px;
+}
+.cx-onboard-tabs button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.cx-onboard-tabs button.active {
+  background: var(--ink);
+  color: var(--panel);
+  border-color: var(--ink);
+}
+.cx-onboard-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.cx-onboard-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cx-onboard-panel h2 {
+  margin: 0;
+  font-size: 14px;
+}
+.cx-onboard-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cx-onboard-editor {
+  width: 100%;
+  min-height: 320px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 10px;
+  resize: vertical;
+}
+.cx-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cx-issue {
+  margin: 0;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.cx-issue code {
+  font-weight: 700;
+  margin-right: 4px;
+}
+.cx-issue.error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.cx-issue.warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.cx-issue.ok {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.cx-primary {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--panel);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.cx-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.cx-field {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cx-field input,
+.cx-field select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.cx-onboard-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cx-onboard-svg {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.cx-bp-boundary {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.cx-bp-zone {
+  fill: rgba(60, 130, 90, 0.16);
+  stroke: var(--green);
+  stroke-width: 1;
+}
+.cx-bp-nogo {
+  fill: rgba(190, 60, 50, 0.18);
+  stroke: var(--red);
+  stroke-width: 1;
+}
+.cx-bp-wp {
+  fill: var(--ink);
+}
+.cx-bp-dock {
+  fill: var(--amber);
+}
+.cx-onboard-units {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cx-onboard-unit {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.cx-onboard-unit code {
+  color: var(--muted);
+}
+.cx-safety {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.cx-safety.deterministic_lan {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.cx-safety.mediated_observed {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.cx-health {
+  margin-top: 4px;
+  color: var(--muted);
+}
+.cx-health.healthy {
+  color: var(--green);
+}
+.cx-health.degraded {
+  color: var(--amber);
+}
+.cx-health.offline {
+  color: var(--red);
+}
+@media (max-width: 1024px) {
+  .cx-onboard-cols {
+    grid-template-columns: 1fr;
+  }
 }

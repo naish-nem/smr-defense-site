@@ -70,7 +70,7 @@ export function SiteTwinView(props: {
             <p className="cx-kicker">Site twin</p>
             <h1>Map and 3D model</h1>
           </div>
-          <span>Sample Topaz frame - not a survey deliverable</span>
+          <span>Sample Fort Pierce frame - not a survey deliverable</span>
         </div>
         <iframe
           className="cx-site-twin-frame"

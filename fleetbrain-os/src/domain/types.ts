@@ -220,6 +220,8 @@ export interface AuditEntry {
   detail: string;
   before?: Record<string, unknown>;
   after?: Record<string, unknown>;
+  prevHash?: string;
+  hash?: string;
 }
 
 export interface AdapterCapabilities {

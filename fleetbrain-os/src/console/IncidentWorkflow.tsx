@@ -159,221 +159,265 @@ export function IncidentWorkflow(props: {
         </span>
       </div>
 
-      <ol className="cx-stepper">
-        {/* 1. Detect */}
-        <Step n={1} title="Detect">
-          <p className="cx-step-lead">{model.detect.what}</p>
-          <Value v={model.detect.signal} />
-        </Step>
+      <div className="cx-incident-layout">
+        <div className="cx-incident-left-col">
+          <ol className="cx-stepper">
+            {/* 1. Detect */}
+            <Step n={1} title="Detect">
+              <p className="cx-step-lead">{model.detect.what}</p>
+              <Value v={model.detect.signal} />
+            </Step>
 
-        {/* 2. Evidence */}
-        <Step n={2} title="Evidence">
-          <div className="cx-incident-evidence">
-            {model.evidence.imageUri ? (
-              <img src={model.evidence.imageUri} alt={decision.whatHappened} />
-            ) : (
-              <div className="cx-noframe small">
-                <span className="cx-noframe-glyph" aria-hidden>◌</span>
-                <strong>No visual frame</strong>
-                <span>Sensor / telemetry evidence — {decision.sourceMachine}</span>
-              </div>
-            )}
-          </div>
-          <Value v={model.evidence.pose} />
-          <Value
-            v={{
-              label: "Captured at",
-              value: model.evidence.timestamp,
-              source: "artifact"
-            }}
-          />
-          {model.evidence.thermalDelta ? <Value v={model.evidence.thermalDelta} /> : null}
-        </Step>
+            {/* 2. Evidence */}
+            <Step n={2} title="Evidence">
+              <p className="cx-step-lead">Visual frame and telemetry captured at inspection point.</p>
+              <Value v={model.evidence.pose} />
+              <Value
+                v={{
+                  label: "Captured at",
+                  value: model.evidence.timestamp,
+                  source: "artifact"
+                }}
+              />
+              {model.evidence.thermalDelta ? <Value v={model.evidence.thermalDelta} /> : null}
+            </Step>
 
-        {/* 3. Assess */}
-        <Step n={3} title="Assess">
-          <Value
-            v={{
-              label: "Severity",
-              value: model.assess.severity,
-              source: "computed",
-              note: model.assess.rationale
-            }}
-          />
-        </Step>
+            {/* 3. Assess */}
+            <Step n={3} title="Assess">
+              <Value
+                v={{
+                  label: "Severity",
+                  value: model.assess.severity,
+                  source: "computed",
+                  note: model.assess.rationale
+                }}
+              />
+            </Step>
 
-        {/* 4. Recommend */}
-        <Step n={4} title="Recommend">
-          <Value
-            v={{
-              label: "Recommended action",
-              value: ACTION_LABELS[model.recommend.action],
-              source: "computed",
-              note: model.recommend.rationale
-            }}
-          />
-        </Step>
+            {/* 4. Recommend */}
+            <Step n={4} title="Recommend">
+              <Value
+                v={{
+                  label: "Recommended action",
+                  value: ACTION_LABELS[model.recommend.action],
+                  source: "computed",
+                  note: model.recommend.rationale
+                }}
+              />
+            </Step>
 
-        {/* 5. Eligibility gates */}
-        <Step n={5} title="Eligibility gates">
-          {eligibility.motion ? (
-            <>
+            {/* 5. Eligibility gates */}
+            <Step n={5} title="Eligibility gates">
+              {eligibility.motion ? (
+                <>
+                  <p className="cx-step-lead">
+                    Arbiter checklist for the recommended action ({ACTION_LABELS[model.recommend.action]}){" "}
+                    <SourceTag kind="computed" />
+                  </p>
+                  <ul className="cx-gates">
+                    {eligibility.gates.map((g) => (
+                      <li key={g.gateId} className={g.pass ? "pass" : "fail"}>
+                        <span className="cx-gate-id">{g.gateId}</span>
+                        <span className="cx-gate-verdict">{g.pass ? "PASS" : "FAIL"}</span>
+                        {!g.pass && g.reason ? <span className="cx-gate-reason">{g.reason}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={`cx-gate-summary ${eligibility.allowed ? "allow" : "deny"}`}>
+                    {eligibility.allowed
+                      ? "All gates pass — motion eligible."
+                      : `Denied by ${eligibility.deniedByGate} gate.`}
+                  </p>
+                </>
+              ) : (
+                <p className="cx-step-lead">
+                  Recommended action is non-motion ({ACTION_LABELS[model.recommend.action]}); no arbiter
+                  gates apply. <SourceTag kind="computed" />
+                </p>
+              )}
+            </Step>
+
+            {/* 6. Act */}
+            <Step n={6} title="Act" done={closed || motionAcked}>
               <p className="cx-step-lead">
-                Arbiter checklist for the recommended action ({ACTION_LABELS[model.recommend.action]}){" "}
-                <SourceTag kind="computed" />
+                {closed
+                  ? `Action resolved: ${ACTION_LABELS[result?.action || "confirm"]}`
+                  : motionAcked
+                  ? `Guarded command initiated: ${ACTION_LABELS[result?.action || "dispatch"]}`
+                  : "Operator action required. Use the Action Panel on the right to resolve or initiate a verification loop."}
               </p>
-              <ul className="cx-gates">
-                {eligibility.gates.map((g) => (
-                  <li key={g.gateId} className={g.pass ? "pass" : "fail"}>
-                    <span className="cx-gate-id">{g.gateId}</span>
-                    <span className="cx-gate-verdict">{g.pass ? "PASS" : "FAIL"}</span>
-                    {!g.pass && g.reason ? <span className="cx-gate-reason">{g.reason}</span> : null}
-                  </li>
-                ))}
-              </ul>
-              <p className={`cx-gate-summary ${eligibility.allowed ? "allow" : "deny"}`}>
-                {eligibility.allowed
-                  ? "All gates pass — motion eligible."
-                  : `Denied by ${eligibility.deniedByGate} gate.`}
-              </p>
-            </>
-          ) : (
-            <p className="cx-step-lead">
-              Recommended action is non-motion ({ACTION_LABELS[model.recommend.action]}); no arbiter
-              gates apply. <SourceTag kind="computed" />
-            </p>
-          )}
-        </Step>
+            </Step>
 
-        {/* 6. Act */}
-        <Step n={6} title="Act">
-          <div className="cx-incident-actions">
-            {ALL_ACTIONS.map((action) => {
-              const { enabled, reason } = actionEnabled(action);
-              const isRecommended = action === model.recommend.action;
-              const recallHint = action === "recall" ? ` → ${dockLabel}` : "";
-              return (
-                <button
-                  key={action}
-                  type="button"
-                  className={`${isRecommended ? "primary" : ""}${action === "estop" ? " danger" : ""}`}
-                  disabled={!enabled}
-                  title={enabled ? undefined : reason}
-                  onClick={() => onAction(action, decision)}
-                >
-                  {ACTION_LABELS[action]}
-                  {recallHint}
-                  {!enabled && reason ? <span className="cx-block-reason">{reason}</span> : null}
-                </button>
-              );
-            })}
+            {/* 7. Acknowledge */}
+            <Step n={7} title="Acknowledge" done={motionAcked}>
+              {dispatch ? (
+                dispatch.allowed ? (
+                  <Value
+                    v={{
+                      label: "Command acknowledged",
+                      value: `command ${dispatch.arbiterHash}${
+                        dispatch.missionId ? ` · mission ${dispatch.missionState}` : ""
+                      }`,
+                      source: "acked",
+                      note: dispatch.waypointLabel
+                        ? `Returned by the guarded adapter command path for ${dispatch.waypointLabel}.`
+                        : "Returned by the guarded adapter command path."
+                    }}
+                  />
+                ) : (
+                  <p className="cx-step-lead deny">
+                    Command DENIED by {dispatch.deniedByGate} gate — no unit moved. {dispatch.reasons.join(" · ")}
+                  </p>
+                )
+              ) : (
+                <p className="cx-step-lead muted">Awaiting an approved motion action.</p>
+              )}
+            </Step>
+
+            {/* 8. Monitor */}
+            <Step n={8} title="Monitor" done={motionAcked}>
+              {dispatch?.allowed && result?.action === "dispatch" ? (
+                <>
+                  <Value
+                    v={{
+                      label: "Mission state",
+                      value: dispatch.missionState ?? "—",
+                      source: "computed"
+                    }}
+                  />
+                  <Value
+                    v={{
+                      label: "Unit position / battery",
+                      value: `simulated en-route to ${dispatch.waypointLabel ?? "verify waypoint"}`,
+                      source: "simulated",
+                      note: "No live unit attached in the simulator; position is illustrative."
+                    }}
+                  />
+                </>
+              ) : dispatch?.allowed && result?.action === "recall" ? (
+                <Value
+                  v={{
+                    label: "Unit en-route to dock",
+                    value: `simulated recall → ${dockLabel}`,
+                    source: "simulated",
+                    note: "Dual-dock: routed to the unit's own home base by kind."
+                  }}
+                />
+              ) : dispatch?.allowed && result?.action === "estop" ? (
+                <Value
+                  v={{
+                    label: "Unit held",
+                    value: `${dispatch.targetMachineId} motors held by safety override`,
+                    source: "acked",
+                    note: "E-stop does not close the incident; confirm, dismiss, or escalate the finding next."
+                  }}
+                />
+              ) : (
+                <p className="cx-step-lead muted">No mission in flight.</p>
+              )}
+            </Step>
+
+            {/* 9. Closeout */}
+            <Step n={9} title="Closeout" done={closed}>
+              {closed ? (
+                <Value
+                  v={{
+                    label: "Signed audit entry",
+                    value:
+                      result?.audit && result.audit.length > 0
+                        ? result.audit[result.audit.length - 1].hash
+                        : "—",
+                    source: "computed",
+                    note: "Hash-chained operator audit entry — tamper-evident."
+                  }}
+                />
+              ) : dispatchInFlight ? (
+                <p className="cx-step-lead muted">
+                  Verification mission in flight — review returned evidence, then confirm, dismiss, or escalate.
+                </p>
+              ) : dispatch && !dispatch.allowed ? (
+                <p className="cx-step-lead muted">
+                  No closeout recorded because the command was denied. Choose a review action or change the blocker.
+                </p>
+              ) : motionAcked ? (
+                <p className="cx-step-lead muted">
+                  Safety command acknowledged. The incident remains open until a review action closes it.
+                </p>
+              ) : (
+                <p className="cx-step-lead muted">Incident open — resolve an action to close out.</p>
+              )}
+            </Step>
+          </ol>
+        </div>
+
+        <div className="cx-incident-right-col">
+          <div className="cx-right-card">
+            <h3>Action Panel</h3>
+            <div className="cx-incident-actions">
+              {ALL_ACTIONS.map((action) => {
+                const { enabled, reason } = actionEnabled(action);
+                const isRecommended = action === model.recommend.action;
+                const recallHint = action === "recall" ? ` → ${dockLabel}` : "";
+                return (
+                  <button
+                    key={action}
+                    type="button"
+                    className={`${isRecommended ? "primary" : ""}${action === "estop" ? " danger" : ""}`}
+                    disabled={!enabled}
+                    title={enabled ? undefined : reason}
+                    onClick={() => onAction(action, decision)}
+                  >
+                    {ACTION_LABELS[action]}
+                    {recallHint}
+                    {!enabled && reason ? <span className="cx-block-reason">{reason}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="cx-act-note">
+              Buttons enable only when the seated role ({ROLE_LABELS[role]}) permits AND the arbiter
+              allows. e-stop is a safety override.
+            </p>
           </div>
-          <p className="cx-act-note">
-            Buttons enable only when the seated role ({ROLE_LABELS[role]}) permits AND the arbiter
-            allows. e-stop is a safety override for Operator / NOC Admin.
-          </p>
-        </Step>
 
-        {/* 7. Acknowledge */}
-        <Step n={7} title="Acknowledge" done={motionAcked}>
-          {dispatch ? (
-            dispatch.allowed ? (
-              <Value
-                v={{
-                  label: "Command acknowledged",
-                  value: `command ${dispatch.arbiterHash}${
-                    dispatch.missionId ? ` · mission ${dispatch.missionState}` : ""
-                  }`,
-                  source: "acked",
-                  note: dispatch.waypointLabel
-                    ? `Returned by the guarded adapter command path for ${dispatch.waypointLabel}.`
-                    : "Returned by the guarded adapter command path."
-                }}
-              />
-            ) : (
-              <p className="cx-step-lead deny">
-                Command DENIED by {dispatch.deniedByGate} gate — no unit moved. {dispatch.reasons.join(" · ")}
-              </p>
-            )
-          ) : (
-            <p className="cx-step-lead muted">Awaiting an approved motion action.</p>
-          )}
-        </Step>
+          <div className="cx-right-card">
+            <h3>Visual Evidence</h3>
+            <div className="cx-evidence-hero">
+              {model.evidence.imageUri ? (
+                <img src={model.evidence.imageUri} alt={decision.whatHappened} />
+              ) : (
+                <div className="cx-noframe large">
+                  <span className="cx-noframe-glyph" aria-hidden>◌</span>
+                  <strong>No visual frame</strong>
+                  <span>Sensor / telemetry evidence</span>
+                </div>
+              )}
+            </div>
+          </div>
 
-        {/* 8. Monitor */}
-        <Step n={8} title="Monitor" done={motionAcked}>
-          {dispatch?.allowed && result?.action === "dispatch" ? (
-            <>
-              <Value
-                v={{
-                  label: "Mission state",
-                  value: dispatch.missionState ?? "—",
-                  source: "computed"
-                }}
-              />
-              <Value
-                v={{
-                  label: "Unit position / battery",
-                  value: `simulated en-route to ${dispatch.waypointLabel ?? "verify waypoint"}`,
-                  source: "simulated",
-                  note: "No live unit attached in the simulator; position is illustrative."
-                }}
-              />
-            </>
-          ) : dispatch?.allowed && result?.action === "recall" ? (
-            <Value
-              v={{
-                label: "Unit en-route to dock",
-                value: `simulated recall → ${dockLabel}`,
-                source: "simulated",
-                note: "Dual-dock: routed to the unit's own home base by kind."
-              }}
-            />
-          ) : dispatch?.allowed && result?.action === "estop" ? (
-            <Value
-              v={{
-                label: "Unit held",
-                value: `${dispatch.targetMachineId} motors held by safety override`,
-                source: "acked",
-                note: "E-stop does not close the incident; confirm, dismiss, or escalate the finding next."
-              }}
-            />
-          ) : (
-            <p className="cx-step-lead muted">No mission in flight.</p>
-          )}
-        </Step>
-
-        {/* 9. Closeout */}
-        <Step n={9} title="Closeout" done={closed}>
-          {closed ? (
-            <Value
-              v={{
-                label: "Signed audit entry",
-                value:
-                  result?.audit && result.audit.length > 0
-                    ? result.audit[result.audit.length - 1].hash
-                    : "—",
-                source: "computed",
-                note: "Hash-chained operator audit entry — tamper-evident."
-              }}
-            />
-          ) : dispatchInFlight ? (
-            <p className="cx-step-lead muted">
-              Verification mission in flight — review returned evidence, then confirm, dismiss, or escalate.
-            </p>
-          ) : dispatch && !dispatch.allowed ? (
-            <p className="cx-step-lead muted">
-              No closeout recorded because the command was denied. Choose a review action or change the blocker.
-            </p>
-          ) : motionAcked ? (
-            <p className="cx-step-lead muted">
-              Safety command acknowledged. The incident remains open until a review action closes it.
-            </p>
-          ) : (
-            <p className="cx-step-lead muted">Incident open — resolve an action to close out.</p>
-          )}
-        </Step>
-      </ol>
+          <div className="cx-right-card">
+            <h3>Site Fleet Telemetry</h3>
+            <div className="cx-telemetry-list">
+              {machines.map((m) => (
+                <div key={m.id} className="cx-telemetry-row">
+                  <div className="cx-telemetry-header">
+                    <strong>{m.label} ({m.id})</strong>
+                    <span className={`cx-telemetry-status status-${m.status}`}>{m.status}</span>
+                  </div>
+                  <div className="cx-telemetry-details">
+                    <span>Vendor: {m.vendor} {m.model ? `· ${m.model}` : ""}</span>
+                    {m.batteryPct !== undefined && (
+                      <span className="cx-telemetry-battery">
+                        Battery: {m.batteryPct}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

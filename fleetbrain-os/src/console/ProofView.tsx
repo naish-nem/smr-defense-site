@@ -1,5 +1,6 @@
 import { resolveImage, type DecisionItem } from "./queue";
-import type { OperatorAuditRecord } from "./auditChain";
+import { verifyAuditChain, type OperatorAuditRecord } from "./auditChain";
+import { verifyAuditTrail } from "../kernel/auditTrailChain";
 import type { SiteRecord } from "../domain/types";
 import type { ScenarioId } from "../data/scenarios";
 
@@ -25,6 +26,16 @@ export function ProofView(props: {
   const covered = record.coverageZones.filter((z) => z.state === "covered").length;
   const total = record.coverageZones.length;
 
+  // Tamper-evidence: re-verify the operator audit chain (append order, not the
+  // time-sorted timeline). This is the moat made visible — the customer/auditor
+  // can confirm the signed record is intact, including any denied commands.
+  const integrity = verifyAuditChain(operatorAudit);
+
+  // Same tamper-evidence check over the site's system audit trail (the
+  // hash-chained AuditEntry[] on the record), proving the system-side links
+  // recompute link-for-link from GENESIS.
+  const trailIntegrity = verifyAuditTrail(record.auditTrail);
+
   // The audit timeline = the site-record audit (system) + the operator chain.
   const timeline = [
     ...record.auditTrail.map((a) => ({
@@ -33,7 +44,7 @@ export function ProofView(props: {
       actor: a.actor,
       action: a.action.replace(/_/g, " "),
       detail: a.detail,
-      hash: undefined as string | undefined
+      hash: a.hash
     })),
     ...operatorAudit.map((a) => ({
       id: a.id,
@@ -56,7 +67,13 @@ export function ProofView(props: {
         zones: record!.coverageZones.map((z) => ({ name: z.name, state: z.state, lastCheckedAt: z.lastCheckedAt }))
       },
       evidence: record!.latestEvidence,
-      operatorAudit
+      operatorAudit,
+      chainIntegrity: {
+        verified: integrity.ok,
+        signedRecords: integrity.count,
+        chainHead: integrity.head,
+        brokenAt: integrity.brokenAt
+      }
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -129,7 +146,33 @@ export function ProofView(props: {
         </section>
 
         <section className="cx-audit">
-          <h2>Audit timeline · hash-chained {decisions.length ? "" : ""}</h2>
+          <h2>Audit timeline · hash-chained</h2>
+          <div className={`cx-integrity ${integrity.ok ? "ok" : "broken"}`} role="status">
+            <span className="cx-integrity-dot" />
+            {integrity.ok ? (
+              <span>
+                <strong>Chain verified</strong> · {integrity.count} signed operator record{integrity.count === 1 ? "" : "s"}
+                {integrity.count > 0 ? <> · head <code className="cx-hash">{integrity.head}</code></> : null}
+              </span>
+            ) : (
+              <span>
+                <strong>Chain broken</strong> · tamper detected at record <code className="cx-hash">{integrity.brokenAt}</code>
+              </span>
+            )}
+          </div>
+          <div className={`cx-integrity ${trailIntegrity.ok ? "ok" : "broken"}`} role="status">
+            <span className="cx-integrity-dot" />
+            {trailIntegrity.ok ? (
+              <span>
+                <strong>Audit trail intact</strong> · {trailIntegrity.count} system record{trailIntegrity.count === 1 ? "" : "s"}
+                {trailIntegrity.count > 0 ? <> · head <code className="cx-hash">{trailIntegrity.head}</code></> : null}
+              </span>
+            ) : (
+              <span>
+                <strong>Audit trail broken</strong> · tamper detected at record <code className="cx-hash">{trailIntegrity.brokenAt}</code>
+              </span>
+            )}
+          </div>
           {timeline.length === 0 ? (
             <p className="cx-sub">No recorded actions for this situation yet.</p>
           ) : (
